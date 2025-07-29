@@ -316,23 +316,91 @@
             this.progress = {};
             this.currentView = 'timeline';
             
-            this.loadPathway();
+            // Use setTimeout to ensure DOM is fully ready
+            setTimeout(() => {
+                try {
+                    this.safeInitialize();
+                } catch (error) {
+                    console.error('PathwayViewer initialization error:', error);
+                    this.showErrorState();
+                }
+            }, 100);
+        }
+        
+        safeInitialize() {
+            // Show loading state
+            showLoading();
+            
+            // Try to load pathway data
+            if (!this.loadPathway()) {
+                this.showErrorState();
+                return;
+            }
+            
+            // Initialize event listeners safely
             this.initializeEventListeners();
+            
+            // Display pathway if data is available
+            if (this.pathway) {
+                this.displayPathway();
+            } else {
+                this.showErrorState();
+            }
+        }
+        
+        showErrorState() {
+            hideLoading();
+            
+            // Update title safely
+            const titleEl = document.getElementById('pathwayTitle');
+            if (titleEl) {
+                titleEl.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-3"></i>Pathway Not Available';
+            }
+            
+            // Update description safely
+            const descEl = document.getElementById('pathwayDescription');
+            if (descEl) {
+                descEl.textContent = 'Unable to load pathway data. Please try completing the assessment again.';
+            }
+            
+            // Show error message
+            showToast('Pathway data could not be loaded. Redirecting to assessment...', 'warning');
+            
+            // Redirect after delay
+            setTimeout(() => {
+                window.location.href = '/assessment';
+            }, 3000);
         }
         
         initializeEventListeners() {
-            // Progress range sliders
-            document.getElementById('progressPercentage').addEventListener('input', (e) => {
-                document.getElementById('progressPercentageValue').textContent = e.target.value + '%';
-            });
-            
-            document.getElementById('difficultyRating').addEventListener('input', (e) => {
-                document.getElementById('difficultyRatingValue').textContent = e.target.value;
-            });
-            
-            document.getElementById('engagementRating').addEventListener('input', (e) => {
-                document.getElementById('engagementRatingValue').textContent = e.target.value;
-            });
+            try {
+                // Progress range sliders - with null checks
+                const progressPercentage = document.getElementById('progressPercentage');
+                if (progressPercentage) {
+                    progressPercentage.addEventListener('input', (e) => {
+                        const valueEl = document.getElementById('progressPercentageValue');
+                        if (valueEl) valueEl.textContent = e.target.value + '%';
+                    });
+                }
+                
+                const difficultyRating = document.getElementById('difficultyRating');
+                if (difficultyRating) {
+                    difficultyRating.addEventListener('input', (e) => {
+                        const valueEl = document.getElementById('difficultyRatingValue');
+                        if (valueEl) valueEl.textContent = e.target.value;
+                    });
+                }
+                
+                const engagementRating = document.getElementById('engagementRating');
+                if (engagementRating) {
+                    engagementRating.addEventListener('input', (e) => {
+                        const valueEl = document.getElementById('engagementRatingValue');
+                        if (valueEl) valueEl.textContent = e.target.value;
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing event listeners:', error);
+            }
         }
         
         loadPathway() {
@@ -343,8 +411,8 @@
                     this.pathway = JSON.parse(storedPathway);
                     // Validate pathway structure
                     if (this.validatePathway(this.pathway)) {
-                        this.displayPathway();
-                        return;
+                        console.log('Loaded pathway from sessionStorage');
+                        return true; // Data is valid
                     }
                 } catch (error) {
                     console.error('Error parsing stored pathway:', error);
@@ -356,17 +424,17 @@
                 try {
                     this.pathway = window.pathwayData;
                     if (this.validatePathway(this.pathway)) {
-                        this.displayPathway();
-                        return;
+                        console.log('Loaded pathway from server data');
+                        return true; // Data is valid
                     }
                 } catch (error) {
                     console.error('Error loading server pathway:', error);
                 }
             }
             
-            // Last resort: try to load from URL parameter or show error
-            const pathwayId = window.location.pathname.split('/').pop();
-            this.loadPathwayFromServer(pathwayId);
+            // If we get here, no valid data was found
+            console.warn('No valid pathway data found');
+            return false;
         }
         
         validatePathway(pathway) {
@@ -378,21 +446,7 @@
             return true;
         }
         
-        async loadPathwayFromServer(pathwayId) {
-            try {
-                showLoading();
-                // In a real implementation, this would fetch from the server
-                showToast('Pathway not found. Please complete the assessment first.', 'warning');
-                setTimeout(() => {
-                    window.location.href = '/assessment';
-                }, 3000);
-            } catch (error) {
-                console.error('Error loading pathway:', error);
-                showToast('Failed to load pathway.', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
+
         
         displayPathway() {
             if (!this.pathway) {
@@ -443,9 +497,17 @@
         
         displayObjectives() {
             const container = document.getElementById('objectivesList');
+            if (!container) return;
+            
             container.innerHTML = '';
             
-            this.pathway.learning_objectives.forEach((objective, index) => {
+            const objectives = this.pathway.learning_objectives || [];
+            if (objectives.length === 0) {
+                container.innerHTML = '<div class="col-12 text-muted"><p>No learning objectives defined yet.</p></div>';
+                return;
+            }
+            
+            objectives.forEach((objective, index) => {
                 const objectiveCard = document.createElement('div');
                 objectiveCard.className = 'col-lg-6 mb-3';
                 objectiveCard.innerHTML = `
@@ -467,9 +529,18 @@
         
         displaySkills() {
             const container = document.getElementById('skillsBadges');
+            if (!container) return;
+            
             container.innerHTML = '';
             
-            this.pathway.skills_covered.forEach(skill => {
+            const skills = this.pathway.skills_covered || [];
+            if (skills.length === 0) {
+                container.innerHTML = '<span class="text-muted">No skills defined yet.</span>';
+                return;
+            }
+            
+            skills.forEach(skill => {
+                if (!skill) return; // Skip empty skills
                 const badge = document.createElement('span');
                 badge.className = 'skill-badge';
                 badge.textContent = skill.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -484,9 +555,18 @@
         
         displayTimelineView() {
             const container = document.getElementById('timelineView');
+            if (!container) return;
+            
             container.innerHTML = '';
             
-            this.pathway.modules.forEach((module, moduleIndex) => {
+            const modules = this.pathway.modules || [];
+            if (modules.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted p-4"><p>No modules available yet.</p></div>';
+                return;
+            }
+            
+            modules.forEach((module, moduleIndex) => {
+                if (!module) return;
                 const moduleElement = document.createElement('div');
                 moduleElement.className = 'timeline-item';
                 
