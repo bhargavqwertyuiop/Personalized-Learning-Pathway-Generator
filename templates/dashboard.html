@@ -302,5 +302,41 @@ if (sessionStorage.getItem('pathwayCompleted')) {
     showToast('Great job! Your progress has been updated.', 'success');
     sessionStorage.removeItem('pathwayCompleted');
 }
+
+// Add clear progress function for testing
+async function clearProgress() {
+    if (confirm('Are you sure you want to clear all progress? This cannot be undone.')) {
+        try {
+            const response = await fetch('/api/clear-progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.ok) {
+                showToast('Progress cleared successfully!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('Failed to clear progress', 'error');
+            }
+        } catch (error) {
+            console.error('Error clearing progress:', error);
+            showToast('Error clearing progress', 'error');
+        }
+    }
+}
+
+// Add a debug panel in development
+if (window.location.hostname === 'localhost') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const debugPanel = document.createElement('div');
+        debugPanel.style.cssText = 'position:fixed; bottom:10px; right:10px; z-index:9999; background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px; box-shadow:0 2px 10px rgba(0,0,0,0.1);';
+        debugPanel.innerHTML = `
+            <strong>Debug Panel</strong><br>
+            <button onclick="clearProgress()" class="btn btn-sm btn-warning mt-1">Clear Progress</button>
+            <button onclick="location.reload()" class="btn btn-sm btn-info mt-1">Refresh</button>
+        `;
+        document.body.appendChild(debugPanel);
+    });
+}
 </script>
 {% endblock %}

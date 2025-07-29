@@ -497,20 +497,24 @@ function openResource(url, resourceId) {
         window.open(url, '_blank');
         // Auto-mark as completed when opened
         setTimeout(() => {
-            globalProgress.completedResources.add(resourceId);
-            pathwayLoader.updateProgress();
-            // Update the visual state
-            const resourceItems = document.querySelectorAll(`[onclick*="${resourceId}"]`);
-            resourceItems.forEach(item => {
-                item.classList.add('resource-completed');
-                const button = item.querySelector('button');
-                if (button) {
-                    button.classList.remove('btn-outline-success');
-                    button.classList.add('btn-success');
-                    button.innerHTML = '<i class="fas fa-check-double"></i>';
-                    button.title = 'Completed';
-                }
-            });
+            if (!globalProgress.completedResources.has(resourceId)) {
+                globalProgress.completedResources.add(resourceId);
+                updateBackendProgress(resourceId, 'complete');
+                pathwayLoader.updateProgress();
+                // Update the visual state
+                const resourceItems = document.querySelectorAll(`[onclick*="${resourceId}"]`);
+                resourceItems.forEach(item => {
+                    item.classList.add('resource-completed');
+                    const button = item.querySelector('button');
+                    if (button) {
+                        button.classList.remove('btn-outline-success');
+                        button.classList.add('btn-success');
+                        button.innerHTML = '<i class="fas fa-check-double"></i>';
+                        button.title = 'Completed';
+                    }
+                });
+                showToast('Resource completed automatically!', 'success');
+            }
         }, 1000);
     } else {
         showToast('Resource URL not available', 'warning');
@@ -571,7 +575,7 @@ async function updateBackendProgress(resourceId, action) {
             body: JSON.stringify({
                 resource_id: resourceId,
                 action: action,
-                time_spent: Math.floor(Math.random() * 30) + 5 // Simulate 5-35 minutes
+                time_spent: action === 'complete' ? Math.floor(Math.random() * 30) + 5 : 0 // Only add time when completing, 5-35 minutes
             })
         });
         
