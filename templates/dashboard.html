@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Learning Dashboard - LearningPath AI{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="display-5 fw-bold mb-3">
+        <i class="fas fa-tachometer-alt text-primary me-3"></i>Learning Dashboard
+    </h1>
+    <p class="lead">Track your progress and manage your learning pathways</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-route fa-2x text-primary mb-2"></i>
+                <h4>0</h4>
+                <small class="text-muted">Active Pathways</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4>0</h4>
+                <small class="text-muted">Completed Modules</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                <h4>0h</h4>
+                <small class="text-muted">Time Spent</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                <h4>0</h4>
+                <small class="text-muted">Skills Mastered</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body text-center p-5">
+        <i class="fas fa-chart-line fa-4x text-muted mb-4"></i>
+        <h3>No Learning Pathways Yet</h3>
+        <p class="text-muted mb-4">Take our comprehensive assessment to generate your first personalized learning pathway.</p>
+        <a href="/assessment" class="btn btn-primary btn-lg">
+            <i class="fas fa-brain me-2"></i>Start Assessment
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,699 @@
+{% extends "base.html" %}
+
+{% block title %}Learning Assessment - LearningPath AI{% endblock %}
+
+{% block content %}
+<!-- Assessment Header -->
+<div class="text-center mb-5">
+    <h1 class="display-5 fw-bold mb-3">
+        <i class="fas fa-brain text-primary me-3"></i>Learning Assessment
+    </h1>
+    <p class="lead">
+        Help us understand your learning style, knowledge level, and goals to create 
+        your perfect personalized learning pathway.
+    </p>
+    
+    <!-- Progress Bar -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="progress mb-3" style="height: 15px;">
+                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">
+                    <span id="progressText">0%</span>
+                </div>
+            </div>
+            <small class="text-muted">Estimated time: 10-15 minutes</small>
+        </div>
+    </div>
+</div>
+
+<!-- Assessment Container -->
+<div id="assessmentContainer">
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="card">
+        <div class="card-body text-center p-5">
+            <i class="fas fa-star fa-3x text-warning mb-4"></i>
+            <h3 class="card-title mb-4">Welcome to Your Learning Assessment</h3>
+            <p class="card-text mb-4">
+                This comprehensive assessment will evaluate multiple dimensions of your learning profile:
+            </p>
+            
+            <div class="row mb-4">
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="assessment-feature">
+                        <i class="fas fa-eye fa-2x text-primary mb-2"></i>
+                        <h6>Learning Style</h6>
+                        <small>VARK, Kolb, Gardner's MI</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="assessment-feature">
+                        <i class="fas fa-graduation-cap fa-2x text-success mb-2"></i>
+                        <h6>Knowledge Level</h6>
+                        <small>Current skills & experience</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="assessment-feature">
+                        <i class="fas fa-bullseye fa-2x text-info mb-2"></i>
+                        <h6>Career Goals</h6>
+                        <small>Target roles & timeline</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="assessment-feature">
+                        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                        <h6>Time Commitment</h6>
+                        <small>Schedule & preferences</small>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="startAssessment" class="btn btn-primary btn-lg">
+                <i class="fas fa-play me-2"></i>Start Assessment
+            </button>
+        </div>
+    </div>
+    
+    <!-- Question Screen -->
+    <div id="questionScreen" class="d-none">
+        <div id="questionContainer" class="assessment-question">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+        
+        <div class="d-flex justify-content-between">
+            <button id="prevButton" class="btn btn-outline-secondary" disabled>
+                <i class="fas fa-arrow-left me-2"></i>Previous
+            </button>
+            <div class="d-flex gap-2">
+                <button id="skipButton" class="btn btn-outline-warning">
+                    <i class="fas fa-forward me-2"></i>Skip
+                </button>
+                <button id="nextButton" class="btn btn-primary" disabled>
+                    Next<i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results Screen -->
+    <div id="resultsScreen" class="d-none">
+        <div class="text-center mb-4">
+            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+            <h2>Assessment Complete!</h2>
+            <p class="lead">We're analyzing your responses to create your personalized learning profile...</p>
+        </div>
+        
+        <div id="profileResults" class="d-none">
+            <!-- Results will be shown here -->
+        </div>
+        
+        <div id="pathwayGenerator" class="d-none">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-route me-2"></i>Generate Your Learning Pathway
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="pathwayForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="careerGoals" class="form-label">Primary Career Goal</label>
+                                <select id="careerGoals" class="form-select" required>
+                                    <option value="">Select your target role...</option>
+                                    <option value="Software Developer">Software Developer</option>
+                                    <option value="Data Scientist">Data Scientist</option>
+                                    <option value="Product Manager">Product Manager</option>
+                                    <option value="AI/ML Engineer">AI/ML Engineer</option>
+                                    <option value="Cybersecurity Specialist">Cybersecurity Specialist</option>
+                                    <option value="DevOps Engineer">DevOps Engineer</option>
+                                    <option value="UI/UX Designer">UI/UX Designer</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="timeline" class="form-label">Target Timeline</label>
+                                <select id="timeline" class="form-select" required>
+                                    <option value="">Select timeline...</option>
+                                    <option value="3-6 months">3-6 months</option>
+                                    <option value="6-12 months">6-12 months</option>
+                                    <option value="1-2 years">1-2 years</option>
+                                    <option value="2-3 years">2-3 years</option>
+                                    <option value="3+ years">3+ years</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Focus Areas (select up to 3)</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="web_development" id="focus1">
+                                        <label class="form-check-label" for="focus1">Web Development</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="data_analysis" id="focus2">
+                                        <label class="form-check-label" for="focus2">Data Analysis</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="machine_learning" id="focus3">
+                                        <label class="form-check-label" for="focus3">Machine Learning</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="mobile_development" id="focus4">
+                                        <label class="form-check-label" for="focus4">Mobile Development</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="cloud_computing" id="focus5">
+                                        <label class="form-check-label" for="focus5">Cloud Computing</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="cybersecurity" id="focus6">
+                                        <label class="form-check-label" for="focus6">Cybersecurity</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="algorithms" id="focus7">
+                                        <label class="form-check-label" for="focus7">Algorithms & DS</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="databases" id="focus8">
+                                        <label class="form-check-label" for="focus8">Databases</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input focus-area" type="checkbox" value="ui_ux" id="focus9">
+                                        <label class="form-check-label" for="focus9">UI/UX Design</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-magic me-2"></i>Generate My Learning Pathway
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Back Button -->
+<button class="floating-action" onclick="window.location.href='/'" title="Back to Home">
+    <i class="fas fa-home"></i>
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .assessment-feature {
+        padding: 1rem;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+    }
+    
+    .question-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .option-card {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 0.5rem;
+    }
+    
+    .option-card:hover {
+        border-color: var(--primary-color);
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .option-card.selected {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .scale-option {
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        border: 2px solid #e9ecef;
+        border-radius: 50%;
+        line-height: 56px;
+        text-align: center;
+        cursor: pointer;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    }
+    
+    .scale-option:hover,
+    .scale-option.selected {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .ranking-item {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        cursor: move;
+        transition: all 0.3s ease;
+    }
+    
+    .ranking-item:hover {
+        background: #e9ecef;
+    }
+    
+    .ranking-item.dragging {
+        opacity: 0.5;
+    }
+    
+    #progressBar {
+        transition: width 0.5s ease;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    class AssessmentManager {
+        constructor() {
+            this.questions = [];
+            this.currentQuestionIndex = 0;
+            this.responses = {};
+            this.assessmentId = null;
+            
+            this.initializeEventListeners();
+        }
+        
+        initializeEventListeners() {
+            document.getElementById('startAssessment').addEventListener('click', () => this.startAssessment());
+            document.getElementById('nextButton').addEventListener('click', () => this.nextQuestion());
+            document.getElementById('prevButton').addEventListener('click', () => this.prevQuestion());
+            document.getElementById('skipButton').addEventListener('click', () => this.skipQuestion());
+            document.getElementById('pathwayForm').addEventListener('submit', (e) => this.generatePathway(e));
+            
+            // Focus area limit enforcement
+            document.querySelectorAll('.focus-area').forEach(checkbox => {
+                checkbox.addEventListener('change', this.enforeFocusAreaLimit.bind(this));
+            });
+        }
+        
+        async startAssessment() {
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/start-assessment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.assessmentId = data.assessment_id;
+                    this.questions = data.questions;
+                    
+                    document.getElementById('welcomeScreen').classList.add('d-none');
+                    document.getElementById('questionScreen').classList.remove('d-none');
+                    
+                    this.showQuestion(0);
+                } else {
+                    showToast('Failed to start assessment. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error starting assessment:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        showQuestion(index) {
+            if (index >= this.questions.length) {
+                this.completeAssessment();
+                return;
+            }
+            
+            this.currentQuestionIndex = index;
+            const question = this.questions[index];
+            const container = document.getElementById('questionContainer');
+            
+            // Update progress
+            const progress = ((index + 1) / this.questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+            
+            // Generate question HTML
+            let questionHTML = `
+                <div class="question-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h4 class="text-primary">Question ${index + 1} of ${this.questions.length}</h4>
+                        <span class="badge bg-secondary">${question.category}</span>
+                    </div>
+                    <h5 class="mb-4">${question.text}</h5>
+                    <div id="optionsContainer">
+            `;
+            
+            if (question.type === 'multiple_choice') {
+                question.options.forEach((option, optIndex) => {
+                    questionHTML += `
+                        <div class="option-card" data-value="${optIndex}">
+                            <i class="fas fa-circle me-2"></i>${option}
+                        </div>
+                    `;
+                });
+            } else if (question.type === 'scale') {
+                questionHTML += '<div class="text-center">';
+                question.options.forEach((option, optIndex) => {
+                    questionHTML += `
+                        <div class="scale-option" data-value="${optIndex}" title="${option}">
+                            ${optIndex + 1}
+                        </div>
+                    `;
+                });
+                questionHTML += '<div class="mt-3">';
+                questionHTML += `<small class="text-muted">${question.options[0]} → ${question.options[question.options.length - 1]}</small>`;
+                questionHTML += '</div></div>';
+            } else if (question.type === 'ranking') {
+                questionHTML += '<p class="text-muted mb-3">Drag to reorder from most preferred (top) to least preferred (bottom):</p>';
+                questionHTML += '<div id="rankingContainer">';
+                question.options.forEach((option, optIndex) => {
+                    questionHTML += `
+                        <div class="ranking-item" data-value="${optIndex}" draggable="true">
+                            <i class="fas fa-grip-vertical me-2"></i>${option}
+                        </div>
+                    `;
+                });
+                questionHTML += '</div>';
+            }
+            
+            questionHTML += `
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = questionHTML;
+            
+            // Add event listeners
+            this.setupQuestionInteractions(question);
+            
+            // Update navigation buttons
+            document.getElementById('prevButton').disabled = index === 0;
+            document.getElementById('nextButton').disabled = true;
+            
+            // Load previous response if exists
+            if (question.id in this.responses) {
+                this.loadPreviousResponse(question);
+            }
+        }
+        
+        setupQuestionInteractions(question) {
+            if (question.type === 'multiple_choice' || question.type === 'scale') {
+                document.querySelectorAll('.option-card, .scale-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        // Clear previous selections
+                        document.querySelectorAll('.option-card, .scale-option').forEach(opt => 
+                            opt.classList.remove('selected'));
+                        
+                        // Select current option
+                        e.target.classList.add('selected');
+                        
+                        // Store response
+                        this.responses[question.id] = parseInt(e.target.dataset.value);
+                        
+                        // Enable next button
+                        document.getElementById('nextButton').disabled = false;
+                    });
+                });
+            } else if (question.type === 'ranking') {
+                this.setupDragAndDrop();
+            }
+        }
+        
+        setupDragAndDrop() {
+            const container = document.getElementById('rankingContainer');
+            let draggedElement = null;
+            
+            container.addEventListener('dragstart', (e) => {
+                draggedElement = e.target;
+                e.target.classList.add('dragging');
+            });
+            
+            container.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+                this.updateRankingResponse();
+            });
+            
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const afterElement = this.getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(draggedElement);
+                } else {
+                    container.insertBefore(draggedElement, afterElement);
+                }
+            });
+        }
+        
+        getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.ranking-item:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+        
+        updateRankingResponse() {
+            const question = this.questions[this.currentQuestionIndex];
+            const rankings = [];
+            
+            document.querySelectorAll('.ranking-item').forEach((item, index) => {
+                rankings.push(parseInt(item.dataset.value));
+            });
+            
+            this.responses[question.id] = rankings;
+            document.getElementById('nextButton').disabled = false;
+        }
+        
+        loadPreviousResponse(question) {
+            const response = this.responses[question.id];
+            
+            if (question.type === 'multiple_choice' || question.type === 'scale') {
+                const option = document.querySelector(`[data-value="${response}"]`);
+                if (option) {
+                    option.classList.add('selected');
+                    document.getElementById('nextButton').disabled = false;
+                }
+            }
+            // Ranking responses would need more complex loading logic
+        }
+        
+        nextQuestion() {
+            this.showQuestion(this.currentQuestionIndex + 1);
+        }
+        
+        prevQuestion() {
+            if (this.currentQuestionIndex > 0) {
+                this.showQuestion(this.currentQuestionIndex - 1);
+            }
+        }
+        
+        skipQuestion() {
+            // Mark as skipped and move to next
+            const question = this.questions[this.currentQuestionIndex];
+            this.responses[question.id] = null;
+            this.nextQuestion();
+        }
+        
+        async completeAssessment() {
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/submit-assessment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ responses: this.responses })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.showResults(data.profile);
+                } else {
+                    showToast('Failed to process assessment. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error completing assessment:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        showResults(profile) {
+            document.getElementById('questionScreen').classList.add('d-none');
+            document.getElementById('resultsScreen').classList.remove('d-none');
+            
+            // Show results analysis
+            setTimeout(() => {
+                this.displayProfileResults(profile);
+                document.getElementById('profileResults').classList.remove('d-none');
+                document.getElementById('pathwayGenerator').classList.remove('d-none');
+            }, 2000);
+        }
+        
+        displayProfileResults(profile) {
+            const container = document.getElementById('profileResults');
+            
+            let resultsHTML = `
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Learning Style</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>VARK Primary:</strong> ${profile.learning_styles.vark?.primary_style || 'Visual'}</p>
+                                <p><strong>Kolb Style:</strong> ${profile.learning_styles.kolb?.style || 'Assimilating'}</p>
+                                <p class="mb-0"><strong>Multimodal:</strong> ${profile.learning_styles.vark?.multimodal ? 'Yes' : 'No'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Knowledge Level</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Overall:</strong> ${profile.knowledge_levels?.overall_level || 'Beginner'}</p>
+                                <p><strong>Strengths:</strong> ${profile.knowledge_levels?.strengths?.join(', ') || 'To be determined'}</p>
+                                <p class="mb-0"><strong>Growth Areas:</strong> ${profile.knowledge_levels?.growth_areas?.join(', ') || 'Multiple areas'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Personalized Recommendations</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Preferred Content Types:</h6>
+                                <ul class="list-unstyled">
+                                    ${profile.recommendations?.content_types?.map(type => 
+                                        `<li><i class="fas fa-check text-success me-2"></i>${type.replace('_', ' ')}</li>`
+                                    ).join('') || '<li>Videos and interactive content</li>'}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Learning Strategies:</h6>
+                                <ul class="list-unstyled">
+                                    ${profile.recommendations?.learning_strategies?.map(strategy => 
+                                        `<li><i class="fas fa-check text-success me-2"></i>${strategy.replace('_', ' ')}</li>`
+                                    ).join('') || '<li>Hands-on practice</li>'}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = resultsHTML;
+        }
+        
+        enforeFocusAreaLimit() {
+            const checkboxes = document.querySelectorAll('.focus-area');
+            const checked = document.querySelectorAll('.focus-area:checked');
+            
+            if (checked.length >= 3) {
+                checkboxes.forEach(checkbox => {
+                    if (!checkbox.checked) {
+                        checkbox.disabled = true;
+                    }
+                });
+            } else {
+                checkboxes.forEach(checkbox => {
+                    checkbox.disabled = false;
+                });
+            }
+        }
+        
+        async generatePathway(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const careerGoals = [formData.get('careerGoals')];
+            const timeline = formData.get('timeline');
+            const focusAreas = Array.from(document.querySelectorAll('.focus-area:checked'))
+                                  .map(cb => cb.value);
+            
+            if (!careerGoals[0] || !timeline) {
+                showToast('Please fill in all required fields.', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/generate-pathway', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        career_goals: careerGoals,
+                        timeline: timeline,
+                        focus_areas: focusAreas
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store pathway and redirect to pathway view
+                    sessionStorage.setItem('generatedPathway', JSON.stringify(data.pathway));
+                    window.location.href = `/pathway/${data.pathway.id}`;
+                } else {
+                    showToast('Failed to generate pathway. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating pathway:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+    }
+    
+    // Initialize assessment manager when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        new AssessmentManager();
+    });
+</script>
+{% endblock %}
