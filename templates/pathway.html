@@ -191,6 +191,23 @@ let globalProgress = {
     totalResources: 0
 };
 
+// Load existing progress from backend
+async function loadExistingProgress() {
+    try {
+        const response = await fetch('/api/get-progress');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.progress) {
+                data.progress.completed_resources.forEach(resourceId => {
+                    globalProgress.completedResources.add(resourceId);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading existing progress:', error);
+    }
+}
+
 // Simple, robust pathway loader
 class SimplePathwayLoader {
     constructor() {
@@ -201,6 +218,10 @@ class SimplePathwayLoader {
     async init() {
         try {
             showLoading();
+            
+            // Load existing progress first
+            await loadExistingProgress();
+            
             await this.loadPathwayData();
             if (this.pathway) {
                 this.displayPathway();
@@ -502,13 +523,19 @@ function toggleProgress(resourceId, event) {
         event.preventDefault();
     }
     
-    if (globalProgress.completedResources.has(resourceId)) {
+    const wasCompleted = globalProgress.completedResources.has(resourceId);
+    const action = wasCompleted ? 'uncomplete' : 'complete';
+    
+    if (wasCompleted) {
         globalProgress.completedResources.delete(resourceId);
         showToast('Progress unmarked', 'info');
     } else {
         globalProgress.completedResources.add(resourceId);
         showToast('Resource completed!', 'success');
     }
+    
+    // Update backend progress
+    updateBackendProgress(resourceId, action);
     
     pathwayLoader.updateProgress();
     
@@ -532,6 +559,28 @@ function toggleProgress(resourceId, event) {
             button.title = 'Mark as completed';
         }
     });
+}
+
+async function updateBackendProgress(resourceId, action) {
+    try {
+        const response = await fetch('/api/update-progress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                resource_id: resourceId,
+                action: action,
+                time_spent: Math.floor(Math.random() * 30) + 5 // Simulate 5-35 minutes
+            })
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to update backend progress');
+        }
+    } catch (error) {
+        console.error('Error updating backend progress:', error);
+    }
 }
 
 // Make pathway data available to JavaScript

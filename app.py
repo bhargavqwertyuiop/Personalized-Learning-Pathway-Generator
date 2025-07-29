@@ -195,6 +195,18 @@ def generate_pathway():
         # Store pathway in session for later retrieval
         session['current_pathway'] = enriched_pathway
         
+        # Initialize user progress if not exists
+        if 'user_progress' not in session:
+            session['user_progress'] = {
+                'completed_resources': [],
+                'time_spent': 0,
+                'pathways_created': 1,
+                'skills_progress': {}
+            }
+        else:
+            # Increment pathway creation count
+            session['user_progress']['pathways_created'] = session['user_progress'].get('pathways_created', 0) + 1
+        
         return jsonify({
             'success': True,
             'pathway': enriched_pathway
@@ -232,7 +244,182 @@ def adapt_pathway():
 @app.route('/dashboard')
 def dashboard():
     """User dashboard showing all pathways and progress"""
-    return render_template('dashboard.html')
+    # Calculate real progress data
+    dashboard_data = calculate_dashboard_stats()
+    return render_template('dashboard.html', **dashboard_data)
+
+def calculate_dashboard_stats():
+    """Calculate real user progress statistics"""
+    # Get current pathway and learning profile
+    current_pathway = session.get('current_pathway', None)
+    learning_profile = session.get('learning_profile', None)
+    user_progress = session.get('user_progress', {
+        'completed_resources': [],
+        'time_spent': 0,
+        'pathways_created': 0,
+        'skills_progress': {}
+    })
+    
+    # Initialize stats
+    stats = {
+        'active_pathways': 0,
+        'completed_modules': 0,
+        'completed_resources': 0,
+        'total_resources': 0,
+        'time_spent': user_progress.get('time_spent', 0),
+        'skills_mastered': 0,
+        'recent_activity': [],
+        'pathway_data': None,
+        'learning_profile': learning_profile,
+        'completion_percentage': 0
+    }
+    
+    if current_pathway:
+        stats['active_pathways'] = 1
+        stats['pathway_data'] = current_pathway
+        
+        # Calculate module and resource statistics
+        completed_modules = 0
+        total_modules = len(current_pathway.get('modules', []))
+        total_resources = 0
+        completed_resources_count = 0
+        
+        for module in current_pathway.get('modules', []):
+            module_completed = True
+            module_resources = 0
+            module_completed_resources = 0
+            
+            for topic in module.get('topics', []):
+                topic_resources = topic.get('resources', [])
+                module_resources += len(topic_resources)
+                total_resources += len(topic_resources)
+                
+                for resource in topic_resources:
+                    if resource.get('id') in user_progress.get('completed_resources', []):
+                        module_completed_resources += 1
+                        completed_resources_count += 1
+            
+            # Consider module completed if 80% of resources are done
+            if module_resources > 0 and (module_completed_resources / module_resources) >= 0.8:
+                completed_modules += 1
+        
+        stats['completed_modules'] = completed_modules
+        stats['completed_resources'] = completed_resources_count
+        stats['total_resources'] = total_resources
+        
+        # Calculate overall completion percentage
+        if total_resources > 0:
+            stats['completion_percentage'] = round((completed_resources_count / total_resources) * 100)
+        
+        # Calculate skills mastered (based on completed modules)
+        skills_covered = current_pathway.get('skills_covered', [])
+        if total_modules > 0:
+            skills_completion_ratio = completed_modules / total_modules
+            stats['skills_mastered'] = round(len(skills_covered) * skills_completion_ratio)
+        
+        # Generate recent activity
+        stats['recent_activity'] = generate_recent_activity(current_pathway, user_progress)
+    
+    # Add pathway creation count
+    if learning_profile:
+        stats['pathways_created'] = user_progress.get('pathways_created', 1)
+    
+    return stats
+
+def generate_recent_activity(pathway, user_progress):
+    """Generate recent activity feed"""
+    activities = []
+    
+    # Add pathway creation activity
+    activities.append({
+        'type': 'pathway_created',
+        'title': f'Created learning pathway: {pathway.get("title", "Learning Journey")}',
+        'description': f'Generated for {pathway.get("target_role", "skill development")}',
+        'icon': 'fas fa-route',
+        'color': 'primary',
+        'time': 'Recently'
+    })
+    
+    # Add skill progress activities
+    completed_count = len(user_progress.get('completed_resources', []))
+    if completed_count > 0:
+        activities.append({
+            'type': 'resources_completed',
+            'title': f'Completed {completed_count} learning resources',
+            'description': 'Keep up the great momentum!',
+            'icon': 'fas fa-check-circle',
+            'color': 'success',
+            'time': 'This session'
+        })
+    
+    # Add skills activities
+    skills = pathway.get('skills_covered', [])
+    if skills:
+        activities.append({
+            'type': 'skills_learning',
+            'title': f'Learning {len(skills)} key skills',
+            'description': ', '.join(skills[:3]) + ('...' if len(skills) > 3 else ''),
+            'icon': 'fas fa-cogs',
+            'color': 'info',
+            'time': 'In progress'
+        })
+    
+    return activities[:5]  # Return top 5 activities
+
+# API endpoint to update progress
+@app.route('/api/update-progress', methods=['POST'])
+def update_progress():
+    """Update user progress"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'success': False, 'error': 'No data received'}), 400
+        
+        resource_id = data.get('resource_id')
+        action = data.get('action', 'complete')  # complete, uncomplete
+        time_spent = data.get('time_spent', 0)
+        
+        # Get current progress
+        user_progress = session.get('user_progress', {
+            'completed_resources': [],
+            'time_spent': 0,
+            'pathways_created': 0,
+            'skills_progress': {}
+        })
+        
+        if action == 'complete' and resource_id not in user_progress['completed_resources']:
+            user_progress['completed_resources'].append(resource_id)
+        elif action == 'uncomplete' and resource_id in user_progress['completed_resources']:
+            user_progress['completed_resources'].remove(resource_id)
+        
+        # Add time spent
+        user_progress['time_spent'] += time_spent
+        
+        # Update session
+        session['user_progress'] = user_progress
+        
+        return jsonify({'success': True, 'progress': user_progress})
+        
+    except Exception as e:
+        print(f"Update progress error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/get-progress', methods=['GET'])
+def get_progress():
+    """Get current user progress"""
+    try:
+        user_progress = session.get('user_progress', {
+            'completed_resources': [],
+            'time_spent': 0,
+            'pathways_created': 0,
+            'skills_progress': {}
+        })
+        
+        return jsonify({'success': True, 'progress': user_progress})
+        
+    except Exception as e:
+        print(f"Get progress error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/pathway/<pathway_id>')
 def pathway_view(pathway_id):

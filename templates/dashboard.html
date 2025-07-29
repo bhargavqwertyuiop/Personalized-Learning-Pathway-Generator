@@ -10,45 +10,230 @@
     <p class="lead">Track your progress and manage your learning pathways</p>
 </div>
 
+<!-- Progress Statistics -->
 <div class="row mb-4">
     <div class="col-md-3 col-6 mb-3">
-        <div class="card text-center">
+        <div class="card text-center stat-card">
             <div class="card-body">
                 <i class="fas fa-route fa-2x text-primary mb-2"></i>
-                <h4>0</h4>
+                <h4 class="mb-1">{{ active_pathways }}</h4>
                 <small class="text-muted">Active Pathways</small>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-6 mb-3">
-        <div class="card text-center">
+        <div class="card text-center stat-card">
             <div class="card-body">
                 <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                <h4>0</h4>
+                <h4 class="mb-1">{{ completed_modules }}</h4>
                 <small class="text-muted">Completed Modules</small>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-6 mb-3">
-        <div class="card text-center">
+        <div class="card text-center stat-card">
             <div class="card-body">
                 <i class="fas fa-clock fa-2x text-info mb-2"></i>
-                <h4>0h</h4>
+                <h4 class="mb-1">{{ time_spent }}h</h4>
                 <small class="text-muted">Time Spent</small>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-6 mb-3">
-        <div class="card text-center">
+        <div class="card text-center stat-card">
             <div class="card-body">
                 <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-                <h4>0</h4>
+                <h4 class="mb-1">{{ skills_mastered }}</h4>
                 <small class="text-muted">Skills Mastered</small>
             </div>
         </div>
     </div>
 </div>
 
+{% if pathway_data %}
+<!-- Current Pathway Progress -->
+<div class="row mb-5">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-route text-primary me-2"></i>Current Learning Pathway
+                </h5>
+                <span class="badge bg-primary">{{ completion_percentage }}% Complete</span>
+            </div>
+            <div class="card-body">
+                <h6 class="fw-bold">{{ pathway_data.title }}</h6>
+                <p class="text-muted mb-3">{{ pathway_data.description }}</p>
+                
+                <!-- Overall Progress Bar -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="fw-medium">Overall Progress</small>
+                        <small class="text-muted">{{ completed_resources }}/{{ total_resources }} resources</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ completion_percentage }}%"></div>
+                    </div>
+                </div>
+                
+                <!-- Target Role & Skills -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Target Role</small>
+                        <span class="fw-medium">{{ pathway_data.target_role }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Duration</small>
+                        <span class="fw-medium">{{ pathway_data.total_duration_weeks }} weeks</span>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <a href="/pathway/{{ pathway_data.id }}" class="btn btn-primary">
+                        <i class="fas fa-play me-1"></i>Continue Learning
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-cogs text-info me-2"></i>Skills Progress
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if pathway_data.skills_covered %}
+                    {% for skill in pathway_data.skills_covered[:5] %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="fw-medium">{{ skill.replace('_', ' ').title() }}</small>
+                        <span class="badge bg-light text-dark">
+                            {% if loop.index <= skills_mastered %}In Progress{% else %}Pending{% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                    {% if pathway_data.skills_covered|length > 5 %}
+                    <small class="text-muted">+{{ pathway_data.skills_covered|length - 5 }} more skills</small>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted small">No skills defined for this pathway</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Module Progress -->
+<div class="card mb-5">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-book text-success me-2"></i>Module Progress
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for module in pathway_data.modules %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="module-progress-card">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="me-2">
+                            {% set module_resources = module.topics|sum(attribute='resources')|length if module.topics else 0 %}
+                            {% set module_completed = (completed_resources * module_resources // total_resources) if total_resources > 0 else 0 %}
+                            {% set module_percentage = (module_completed * 100 // module_resources) if module_resources > 0 else 0 %}
+                            
+                            {% if module_percentage >= 80 %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% elif module_percentage > 0 %}
+                                <i class="fas fa-play-circle text-warning"></i>
+                            {% else %}
+                                <i class="fas fa-circle text-muted"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ module.name }}</h6>
+                            <small class="text-muted">{{ module.estimated_weeks }} weeks • {{ module.topics|length if module.topics else 0 }} topics</small>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar" style="width: {{ module_percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Activity -->
+<div class="row mb-5">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-history text-info me-2"></i>Recent Activity
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if recent_activity %}
+                    {% for activity in recent_activity %}
+                    <div class="d-flex align-items-start mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                        <div class="me-3">
+                            <i class="{{ activity.icon }} text-{{ activity.color }}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ activity.title }}</h6>
+                            <p class="text-muted small mb-1">{{ activity.description }}</p>
+                            <small class="text-muted">{{ activity.time }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent activity</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-user text-primary me-2"></i>Learning Profile
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if learning_profile %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Primary Learning Style</small>
+                        <span class="fw-medium">{{ learning_profile.learning_styles.vark.primary_style.title() if learning_profile.learning_styles and learning_profile.learning_styles.vark else 'Not assessed' }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Knowledge Level</small>
+                        <span class="fw-medium">{{ learning_profile.knowledge_levels.overall_level.title() if learning_profile.knowledge_levels else 'Not assessed' }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Weekly Commitment</small>
+                        <span class="fw-medium">{{ learning_profile.preferences.weekly_hours if learning_profile.preferences else 0 }} hours/week</span>
+                    </div>
+                    <a href="/assessment" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-sync-alt me-1"></i>Retake Assessment
+                    </a>
+                {% else %}
+                    <p class="text-muted mb-3">Complete the learning assessment to get personalized recommendations.</p>
+                    <a href="/assessment" class="btn btn-primary">
+                        <i class="fas fa-brain me-1"></i>Take Assessment
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not pathway_data %}
+<!-- No Pathway State -->
 <div class="card">
     <div class="card-body text-center p-5">
         <i class="fas fa-chart-line fa-4x text-muted mb-4"></i>
@@ -59,4 +244,67 @@
         </a>
     </div>
 </div>
+{% endif %}
+
+<style>
+.stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.module-progress-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    border-left: 3px solid #dee2e6;
+    transition: all 0.2s;
+}
+
+.module-progress-card:hover {
+    background: #e9ecef;
+    border-left-color: #007bff;
+}
+
+.progress {
+    border-radius: 10px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+}
+</style>
+
+<script>
+// Auto-refresh dashboard data every 30 seconds
+setInterval(() => {
+    // Refresh page to get latest progress
+    if (document.visibilityState === 'visible') {
+        location.reload();
+    }
+}, 30000);
+
+// Show success message if coming from pathway
+if (sessionStorage.getItem('pathwayCompleted')) {
+    showToast('Great job! Your progress has been updated.', 'success');
+    sessionStorage.removeItem('pathwayCompleted');
+}
+</script>
 {% endblock %}
