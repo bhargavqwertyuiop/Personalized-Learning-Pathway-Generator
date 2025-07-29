@@ -551,7 +551,7 @@
             }
             
             return topic.resources.map(resource => `
-                <div class="resource-item" onclick="showResourceDetails('${resource.id}')">
+                <div class="resource-item" onclick="handleResourceClick('${resource.id}', '${resource.url}')">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center flex-grow-1">
                             <i class="fas fa-${this.getResourceIcon(resource.type)} platform-${resource.platform} me-2"></i>
@@ -563,8 +563,14 @@
                         <div class="d-flex align-items-center gap-2">
                             ${resource.duration ? `<small class="text-muted">${resource.duration}min</small>` : ''}
                             ${resource.rating ? `<small class="text-warning"><i class="fas fa-star"></i> ${resource.rating}</small>` : ''}
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    onclick="window.open('${resource.url}', '_blank'); event.stopPropagation();" 
+                                    title="Open Resource">
+                                <i class="fas fa-external-link-alt"></i>
+                            </button>
                             <button class="btn btn-sm btn-outline-success" 
-                                    onclick="updateProgress('${resource.id}'); event.stopPropagation();">
+                                    onclick="updateProgress('${resource.id}'); event.stopPropagation();"
+                                    title="Mark Progress">
                                 <i class="fas fa-check"></i>
                             </button>
                         </div>
@@ -600,6 +606,20 @@
     }
     
     // Global functions
+    function handleResourceClick(resourceId, resourceUrl) {
+        // Try to show details modal, but if it fails, directly open the resource
+        try {
+            showResourceDetails(resourceId);
+        } catch (error) {
+            console.log('Modal failed, opening resource directly:', error);
+            if (resourceUrl) {
+                window.open(resourceUrl, '_blank');
+            } else {
+                showToast('Resource URL not available', 'warning');
+            }
+        }
+    }
+    
     function switchView(view) {
         const timelineView = document.getElementById('timelineView');
         const modulesView = document.getElementById('modulesView');
@@ -623,9 +643,74 @@
     }
     
     function showResourceDetails(resourceId) {
-        // Implementation for showing resource details in modal
-        const modal = new bootstrap.Modal(document.getElementById('resourceModal'));
-        modal.show();
+        // Find the resource in the pathway data
+        let foundResource = null;
+        
+        if (window.pathwayViewer && window.pathwayViewer.pathway) {
+            for (const module of window.pathwayViewer.pathway.modules) {
+                if (module.topics) {
+                    for (const topic of module.topics) {
+                        if (topic.resources) {
+                            foundResource = topic.resources.find(r => r.id === resourceId);
+                            if (foundResource) break;
+                        }
+                    }
+                }
+                if (foundResource) break;
+            }
+        }
+        
+        if (foundResource) {
+            // Populate modal with resource details
+            document.getElementById('resourceModalTitle').textContent = foundResource.title;
+            document.getElementById('resourceModalBody').innerHTML = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Description</h6>
+                        <p>${foundResource.description || 'No description available.'}</p>
+                        
+                        <h6>Details</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Platform:</strong> ${foundResource.platform}</li>
+                            <li><strong>Type:</strong> ${foundResource.type}</li>
+                            <li><strong>Difficulty:</strong> ${foundResource.difficulty}</li>
+                            ${foundResource.duration ? `<li><strong>Duration:</strong> ${foundResource.duration} minutes</li>` : ''}
+                            ${foundResource.rating ? `<li><strong>Rating:</strong> ${foundResource.rating}/5</li>` : ''}
+                            ${foundResource.instructor ? `<li><strong>Instructor:</strong> ${foundResource.instructor}</li>` : ''}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-${getResourceIcon(foundResource.type)} fa-3x text-primary mb-3"></i>
+                            <h6>${foundResource.platform}</h6>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Set the link for the modal button
+            document.getElementById('resourceModalLink').href = foundResource.url;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('resourceModal'));
+            modal.show();
+        } else {
+            // If resource not found, just open the link directly
+            showToast('Opening resource...', 'info');
+            // We'll implement a fallback in the onclick handler
+        }
+    }
+    
+    function getResourceIcon(type) {
+        const icons = {
+            'video': 'play-circle',
+            'course': 'graduation-cap', 
+            'article': 'file-text',
+            'interactive': 'gamepad',
+            'book': 'book',
+            'podcast': 'podcast'
+        };
+        return icons[type] || 'link';
     }
     
     function updateProgress(resourceId) {
@@ -668,7 +753,7 @@
     
     // Initialize pathway viewer when page loads
     document.addEventListener('DOMContentLoaded', () => {
-        new PathwayViewer();
+        window.pathwayViewer = new PathwayViewer();
     });
 </script>
 {% endblock %}
