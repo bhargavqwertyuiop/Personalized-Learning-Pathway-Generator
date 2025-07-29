@@ -1,8 +1,7 @@
 import json
-import numpy as np
+import random
 from typing import Dict, List, Any
 from dataclasses import dataclass
-import random
 
 @dataclass
 class Question:

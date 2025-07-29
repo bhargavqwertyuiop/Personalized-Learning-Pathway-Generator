@@ -3,7 +3,6 @@ import math
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
-import numpy as np
 
 @dataclass
 class Topic:
