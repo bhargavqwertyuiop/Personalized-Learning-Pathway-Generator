@@ -136,30 +136,26 @@
         <div class="row">
             {% for module in pathway_data.modules %}
             <div class="col-md-6 col-lg-4 mb-3">
-                <div class="module-progress-card">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="me-2">
-                            {% set module_resources = module.topics|sum(attribute='resources')|length if module.topics else 0 %}
-                            {% set module_completed = (completed_resources * module_resources // total_resources) if total_resources > 0 else 0 %}
-                            {% set module_percentage = (module_completed * 100 // module_resources) if module_resources > 0 else 0 %}
-                            
-                            {% if module_percentage >= 80 %}
-                                <i class="fas fa-check-circle text-success"></i>
-                            {% elif module_percentage > 0 %}
-                                <i class="fas fa-play-circle text-warning"></i>
-                            {% else %}
-                                <i class="fas fa-circle text-muted"></i>
-                            {% endif %}
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">{{ module.name }}</h6>
-                            <small class="text-muted">{{ module.estimated_weeks }} weeks • {{ module.topics|length if module.topics else 0 }} topics</small>
-                        </div>
-                    </div>
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar" style="width: {{ module_percentage }}%"></div>
-                    </div>
-                </div>
+                                 <div class="module-progress-card">
+                     <div class="d-flex align-items-center mb-2">
+                         <div class="me-2">
+                             {% if completion_percentage >= 80 %}
+                                 <i class="fas fa-check-circle text-success"></i>
+                             {% elif completion_percentage > 0 %}
+                                 <i class="fas fa-play-circle text-warning"></i>
+                             {% else %}
+                                 <i class="fas fa-circle text-muted"></i>
+                             {% endif %}
+                         </div>
+                         <div class="flex-grow-1">
+                             <h6 class="mb-0">{{ module.name }}</h6>
+                             <small class="text-muted">{{ module.estimated_weeks }} weeks • {{ module.topics|length if module.topics else 0 }} topics</small>
+                         </div>
+                     </div>
+                     <div class="progress" style="height: 4px;">
+                         <div class="progress-bar" style="width: {{ completion_percentage }}%"></div>
+                     </div>
+                 </div>
             </div>
             {% endfor %}
         </div>

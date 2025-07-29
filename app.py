@@ -217,8 +217,8 @@ def generate_pathway():
         return jsonify({'success': False, 'error': 'Failed to generate pathway'}), 500
 
 @app.route('/api/pathways/<pathway_id>/progress', methods=['POST'])
-def update_progress():
-    """Update progress on a specific resource"""
+def update_pathway_progress(pathway_id):
+    """Update progress on a specific resource for a pathway"""
     data = request.json
     # Implementation for progress tracking
     return jsonify({'success': True})
