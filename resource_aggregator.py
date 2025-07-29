@@ -191,130 +191,280 @@ class ResourceAggregator:
 
 # Platform-specific aggregators
 class YouTubeAggregator:
-    """Aggregate educational content from YouTube"""
-    
-    def search_resources(self, query: str, difficulty: str, content_types: List[str], limit: int) -> List[Resource]:
-        # Mock implementation - in production, would use YouTube Data API
+    def search_videos(self, query: str, max_results: int = 5) -> List[Resource]:
+        """Mock YouTube video search with real working URLs"""
+        # Real YouTube educational channels and playlists
+        video_database = {
+            'python': [
+                {
+                    'id': 'yt_python_1',
+                    'title': 'Python Full Course - Learn Python Programming',
+                    'description': 'Complete Python tutorial for beginners covering all fundamentals',
+                    'url': 'https://www.youtube.com/watch?v=_uQrJ0TkZlc',
+                    'duration': 360,
+                    'rating': 4.8,
+                    'instructor': 'Programming with Mosh'
+                },
+                {
+                    'id': 'yt_python_2', 
+                    'title': 'Python Tutorial for Beginners - Full Course in 12 Hours',
+                    'description': 'Learn Python programming from scratch with practical examples',
+                    'url': 'https://www.youtube.com/watch?v=t8pPdKYpowI',
+                    'duration': 720,
+                    'rating': 4.7,
+                    'instructor': 'freeCodeCamp'
+                }
+            ],
+            'javascript': [
+                {
+                    'id': 'yt_js_1',
+                    'title': 'JavaScript Full Course for Beginners',
+                    'description': 'Complete JavaScript tutorial covering ES6+ features',
+                    'url': 'https://www.youtube.com/watch?v=PkZNo7MFNFg',
+                    'duration': 480,
+                    'rating': 4.9,
+                    'instructor': 'freeCodeCamp'
+                },
+                {
+                    'id': 'yt_js_2',
+                    'title': 'Modern JavaScript Tutorial - The Complete Guide',
+                    'description': 'Learn modern JavaScript with real-world projects',
+                    'url': 'https://www.youtube.com/watch?v=2md4HQNRqJA',
+                    'duration': 540,
+                    'rating': 4.6,
+                    'instructor': 'Academind'
+                }
+            ],
+            'react': [
+                {
+                    'id': 'yt_react_1',
+                    'title': 'React Course - Beginner\'s Tutorial for React JavaScript Library',
+                    'description': 'Learn React.js from scratch with hands-on projects',
+                    'url': 'https://www.youtube.com/watch?v=bMknfKXIFA8',
+                    'duration': 300,
+                    'rating': 4.8,
+                    'instructor': 'freeCodeCamp'
+                }
+            ],
+            'data science': [
+                {
+                    'id': 'yt_ds_1',
+                    'title': 'Data Science Full Course - Learn Data Science in 12 Hours',
+                    'description': 'Complete data science tutorial with Python and real projects',
+                    'url': 'https://www.youtube.com/watch?v=ua-CiDNNj30',
+                    'duration': 720,
+                    'rating': 4.7,
+                    'instructor': 'edureka!'
+                }
+            ]
+        }
+        
+        # Find matching videos
+        query_lower = query.lower()
         resources = []
         
-        # Simulate API call with mock data
-        mock_videos = [
-            {
-                'title': f"Complete {query} Tutorial for Beginners",
-                'url': f"https://youtube.com/watch?v=example1",
-                'duration': 3600,  # 1 hour
-                'rating': 4.5,
-                'views': 500000,
-                'channel': 'Tech Education'
-            },
-            {
-                'title': f"Advanced {query} Concepts Explained",
-                'url': f"https://youtube.com/watch?v=example2", 
-                'duration': 2400,  # 40 minutes
-                'rating': 4.7,
-                'views': 200000,
-                'channel': 'Programming Guru'
-            }
-        ]
-        
-        for i, video in enumerate(mock_videos[:limit]):
-            resource = Resource(
-                id=f"yt_{i}_{hash(query)}",
-                title=video['title'],
-                description=f"Comprehensive {query} tutorial covering key concepts",
-                url=video['url'],
-                platform='youtube',
-                type='video',
-                duration=video['duration'] // 60,  # Convert to minutes
-                difficulty=self._infer_difficulty(video['title'], difficulty),
-                rating=video['rating'],
-                enrollment_count=video['views'],
-                instructor=video['channel'],
-                tags=[query, 'tutorial', 'programming']
-            )
-            resources.append(resource)
-        
-        return resources
-    
-    def _infer_difficulty(self, title: str, default: str) -> str:
-        title_lower = title.lower()
-        if 'beginner' in title_lower or 'basics' in title_lower or 'intro' in title_lower:
-            return 'beginner'
-        elif 'advanced' in title_lower or 'expert' in title_lower or 'master' in title_lower:
-            return 'advanced'
-        return default
+        for key, videos in video_database.items():
+            if key in query_lower or any(word in key for word in query_lower.split()):
+                for video in videos[:max_results]:
+                    resources.append(Resource(
+                        id=video['id'],
+                        title=video['title'],
+                        description=video['description'],
+                        url=video['url'],
+                        platform='youtube',
+                        type='video',
+                        duration=video['duration'],
+                        difficulty='beginner',
+                        rating=video['rating'],
+                        instructor=video['instructor'],
+                        tags=[key, 'tutorial', 'free']
+                    ))
+                    
+        # Fallback generic videos if no specific match
+        if not resources:
+            resources = [
+                Resource(
+                    id=f'yt_generic_{int(time.time())}',
+                    title=f'Learn {query.title()} - Complete Tutorial',
+                    description=f'Comprehensive tutorial covering {query} fundamentals and advanced concepts',
+                    url=f'https://www.youtube.com/results?search_query={quote(query)}+tutorial',
+                    platform='youtube',
+                    type='video',
+                    duration=240,
+                    difficulty='beginner',
+                    rating=4.5,
+                    tags=[query.lower(), 'tutorial', 'free']
+                )
+            ]
+            
+        return resources[:max_results]
 
 class CourseraAggregator:
-    """Aggregate free and audit courses from Coursera"""
-    
-    def search_resources(self, query: str, difficulty: str, content_types: List[str], limit: int) -> List[Resource]:
+    def search_courses(self, query: str, max_results: int = 3) -> List[Resource]:
+        """Mock Coursera course search with real working URLs"""
+        course_database = {
+            'python': [
+                {
+                    'id': 'coursera_python_1',
+                    'title': 'Python for Everybody Specialization',
+                    'description': 'Learn to Program and Analyze Data with Python by University of Michigan',
+                    'url': 'https://www.coursera.org/specializations/python',
+                    'instructor': 'University of Michigan'
+                },
+                {
+                    'id': 'coursera_python_2',
+                    'title': 'Programming for Everybody (Getting Started with Python)',
+                    'description': 'Introduction to programming using Python by University of Michigan',
+                    'url': 'https://www.coursera.org/learn/python',
+                    'instructor': 'University of Michigan'
+                }
+            ],
+            'machine learning': [
+                {
+                    'id': 'coursera_ml_1',
+                    'title': 'Machine Learning Course by Andrew Ng',
+                    'description': 'The famous Machine Learning course by Stanford University',
+                    'url': 'https://www.coursera.org/learn/machine-learning',
+                    'instructor': 'Andrew Ng, Stanford University'
+                }
+            ],
+            'data science': [
+                {
+                    'id': 'coursera_ds_1',
+                    'title': 'Data Science Specialization',
+                    'description': 'Complete Data Science course by Johns Hopkins University',
+                    'url': 'https://www.coursera.org/specializations/jhu-data-science',
+                    'instructor': 'Johns Hopkins University'
+                }
+            ],
+            'web development': [
+                {
+                    'id': 'coursera_web_1',
+                    'title': 'Full-Stack Web Development with React Specialization',
+                    'description': 'Complete web development course by The Hong Kong University of Science and Technology',
+                    'url': 'https://www.coursera.org/specializations/full-stack-react',
+                    'instructor': 'The Hong Kong University of Science and Technology'
+                }
+            ]
+        }
+        
+        query_lower = query.lower()
         resources = []
         
-        # Mock Coursera courses
-        mock_courses = [
-            {
-                'title': f"Introduction to {query}",
-                'url': f"https://coursera.org/learn/{query.replace(' ', '-').lower()}",
-                'instructor': "University Professor",
-                'rating': 4.6,
-                'enrollments': 50000,
-                'duration_weeks': 6
-            }
-        ]
+        for key, courses in course_database.items():
+            if key in query_lower or any(word in key for word in query_lower.split()):
+                for course in courses[:max_results]:
+                    resources.append(Resource(
+                        id=course['id'],
+                        title=course['title'],
+                        description=course['description'],
+                        url=course['url'],
+                        platform='coursera',
+                        type='course',
+                        difficulty='intermediate',
+                        rating=4.6,
+                        instructor=course['instructor'],
+                        tags=[key, 'university', 'free audit']
+                    ))
         
-        for i, course in enumerate(mock_courses[:limit]):
-            resource = Resource(
-                id=f"coursera_{i}_{hash(query)}",
-                title=course['title'],
-                description=f"University-level course on {query}",
-                url=course['url'],
-                platform='coursera',
-                type='course',
-                duration=course['duration_weeks'] * 7 * 60,  # Estimate hours
-                difficulty=difficulty,
-                rating=course['rating'],
-                enrollment_count=course['enrollments'],
-                instructor=course['instructor'],
-                tags=[query, 'university', 'certification']
-            )
-            resources.append(resource)
-        
-        return resources
+        # Fallback search
+        if not resources:
+            search_url = f'https://www.coursera.org/search?query={quote(query)}&index=prod_all_launched_products_term_optimization'
+            resources = [
+                Resource(
+                    id=f'coursera_search_{int(time.time())}',
+                    title=f'{query.title()} Courses on Coursera',
+                    description=f'Browse {query} courses and specializations on Coursera with free audit options',
+                    url=search_url,
+                    platform='coursera',
+                    type='course',
+                    difficulty='intermediate',
+                    rating=4.4,
+                    tags=[query.lower(), 'university', 'free audit']
+                )
+            ]
+            
+        return resources[:max_results]
 
 class EdXAggregator:
-    """Aggregate free courses from edX"""
-    
-    def search_resources(self, query: str, difficulty: str, content_types: List[str], limit: int) -> List[Resource]:
+    def search_courses(self, query: str, max_results: int = 3) -> List[Resource]:
+        """Mock edX course search with real working URLs"""
+        course_database = {
+            'python': [
+                {
+                    'id': 'edx_python_1',
+                    'title': 'Introduction to Computer Science and Programming Using Python',
+                    'description': 'MIT\'s introduction to computer science using Python',
+                    'url': 'https://www.edx.org/course/introduction-to-computer-science-and-programming-7',
+                    'instructor': 'MIT'
+                }
+            ],
+            'artificial intelligence': [
+                {
+                    'id': 'edx_ai_1',
+                    'title': 'Artificial Intelligence (AI)',
+                    'description': 'Introduction to AI by Columbia University',
+                    'url': 'https://www.edx.org/course/artificial-intelligence-ai',
+                    'instructor': 'Columbia University'
+                }
+            ],
+            'data science': [
+                {
+                    'id': 'edx_ds_1',
+                    'title': 'Introduction to Data Science',
+                    'description': 'Data Science fundamentals by Microsoft',
+                    'url': 'https://www.edx.org/course/introduction-to-data-science-3',
+                    'instructor': 'Microsoft'
+                }
+            ],
+            'javascript': [
+                {
+                    'id': 'edx_js_1',
+                    'title': 'Introduction to JavaScript',
+                    'description': 'Learn JavaScript programming fundamentals',
+                    'url': 'https://www.edx.org/course/javascript-introduction',
+                    'instructor': 'W3C'
+                }
+            ]
+        }
+        
+        query_lower = query.lower()
         resources = []
         
-        # Mock edX courses
-        mock_courses = [
-            {
-                'title': f"{query} Fundamentals",
-                'url': f"https://edx.org/course/{query.replace(' ', '-').lower()}",
-                'institution': "MIT",
-                'rating': 4.4,
-                'enrollments': 30000
-            }
-        ]
+        for key, courses in course_database.items():
+            if key in query_lower or any(word in key for word in query_lower.split()):
+                for course in courses[:max_results]:
+                    resources.append(Resource(
+                        id=course['id'],
+                        title=course['title'],
+                        description=course['description'],
+                        url=course['url'],
+                        platform='edx',
+                        type='course',
+                        difficulty='intermediate',
+                        rating=4.5,
+                        instructor=course['instructor'],
+                        tags=[key, 'university', 'free']
+                    ))
         
-        for i, course in enumerate(mock_courses[:limit]):
-            resource = Resource(
-                id=f"edx_{i}_{hash(query)}",
-                title=course['title'],
-                description=f"Free course on {query} from {course['institution']}",
-                url=course['url'],
-                platform='edx',
-                type='course',
-                difficulty=difficulty,
-                rating=course['rating'],
-                enrollment_count=course['enrollments'],
-                instructor=course['institution'],
-                tags=[query, 'university', 'free']
-            )
-            resources.append(resource)
-        
-        return resources
+        # Fallback search
+        if not resources:
+            search_url = f'https://www.edx.org/search?q={quote(query)}'
+            resources = [
+                Resource(
+                    id=f'edx_search_{int(time.time())}',
+                    title=f'{query.title()} Courses on edX',
+                    description=f'Explore free {query} courses from top universities on edX',
+                    url=search_url,
+                    platform='edx',
+                    type='course',
+                    difficulty='intermediate',
+                    rating=4.3,
+                    tags=[query.lower(), 'university', 'free']
+                )
+            ]
+            
+        return resources[:max_results]
 
 class KhanAcademyAggregator:
     """Aggregate structured lessons from Khan Academy"""

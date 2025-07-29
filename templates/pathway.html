@@ -8,10 +8,10 @@
     <div class="row mb-4">
         <div class="col-lg-8">
             <h1 class="display-6 fw-bold mb-3" id="pathwayTitle">
-                <i class="fas fa-route text-primary me-3"></i>Your Learning Pathway
+                <i class="fas fa-route text-primary me-3"></i>Loading Your Learning Pathway...
             </h1>
             <p class="lead" id="pathwayDescription">
-                Loading your personalized learning journey...
+                Please wait while we load your personalized learning journey...
             </p>
         </div>
         <div class="col-lg-4 text-lg-end">
@@ -19,10 +19,10 @@
                 <div class="card-body text-center">
                     <h5 class="card-title">Progress Overview</h5>
                     <div class="progress mb-2" style="height: 20px;">
-                        <div id="overallProgress" class="progress-bar" style="width: 0%">0%</div>
+                        <div id="overallProgress" class="progress-bar bg-success" style="width: 0%" role="progressbar">0%</div>
                     </div>
                     <small class="text-muted">
-                        <span id="completedModules">0</span> of <span id="totalModules">0</span> modules completed
+                        <span id="completedResources">0</span> of <span id="totalResources">0</span> resources completed
                     </small>
                 </div>
             </div>
@@ -52,469 +52,246 @@
         <div class="col-md-3 col-6 mb-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <i class="fas fa-layers fa-2x text-info mb-2"></i>
+                    <i class="fas fa-star fa-2x text-warning mb-2"></i>
                     <h5 id="skillsCount">0</h5>
-                    <small class="text-muted">Skills Covered</small>
+                    <small class="text-muted">Skills</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6 mb-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-                    <h5 id="objectivesCount">0</h5>
-                    <small class="text-muted">Objectives</small>
+                    <i class="fas fa-graduation-cap fa-2x text-info mb-2"></i>
+                    <h5 id="totalModules">0</h5>
+                    <small class="text-muted">Modules</small>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Learning Objectives -->
-    <div class="mb-5">
-        <h3 class="mb-4">
-            <i class="fas fa-list-check text-success me-2"></i>Learning Objectives
-        </h3>
-        <div id="objectivesList" class="row">
-            <!-- Objectives will be loaded here -->
-        </div>
-    </div>
-
-    <!-- Skills Covered -->
-    <div class="mb-5">
-        <h3 class="mb-4">
-            <i class="fas fa-cogs text-info me-2"></i>Skills You'll Master
-        </h3>
-        <div id="skillsBadges">
-            <!-- Skills will be loaded here -->
-        </div>
-    </div>
-
-    <!-- Learning Modules Timeline -->
-    <div class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="mb-0">
-                <i class="fas fa-map text-primary me-2"></i>Learning Timeline
-            </h3>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-outline-primary active" onclick="switchView('timeline')">
-                    <i class="fas fa-list me-1"></i>Timeline
-                </button>
-                <button type="button" class="btn btn-outline-primary" onclick="switchView('modules')">
-                    <i class="fas fa-th-large me-1"></i>Modules
-                </button>
+    <div class="row mb-5" id="objectivesSection">
+        <div class="col-12">
+            <h4 class="mb-3"><i class="fas fa-bullseye text-success me-2"></i>Learning Objectives</h4>
+            <div class="row" id="objectivesList">
+                <div class="col-12 text-center text-muted">
+                    <p>Loading objectives...</p>
+                </div>
             </div>
         </div>
-        
-        <!-- Timeline View -->
-        <div id="timelineView" class="pathway-timeline">
-            <!-- Timeline items will be loaded here -->
+    </div>
+
+    <!-- Skills to Learn -->
+    <div class="row mb-5" id="skillsSection">
+        <div class="col-12">
+            <h4 class="mb-3"><i class="fas fa-cogs text-primary me-2"></i>Skills You'll Learn</h4>
+            <div id="skillsBadges">
+                <span class="text-muted">Loading skills...</span>
+            </div>
         </div>
-        
-        <!-- Modules View -->
-        <div id="modulesView" class="d-none">
+    </div>
+
+    <!-- Learning Modules -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3"><i class="fas fa-book text-info me-2"></i>Learning Modules</h4>
             <div id="modulesContainer" class="row">
-                <!-- Module cards will be loaded here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Resource Preview Modal -->
-    <div class="modal fade" id="resourceModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="resourceModalTitle">Resource Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="resourceModalBody">
-                    <!-- Resource details will be loaded here -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <a href="#" id="resourceModalLink" class="btn btn-primary" target="_blank">
-                        <i class="fas fa-external-link-alt me-1"></i>Open Resource
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Progress Update Modal -->
-    <div class="modal fade" id="progressModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Update Progress</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="progressForm">
-                        <input type="hidden" id="progressResourceId">
-                        
-                        <div class="mb-3">
-                            <label for="progressStatus" class="form-label">Status</label>
-                            <select id="progressStatus" class="form-select" required>
-                                <option value="not_started">Not Started</option>
-                                <option value="in_progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="progressPercentage" class="form-label">
-                                Completion Percentage: <span id="progressPercentageValue">0%</span>
-                            </label>
-                            <input type="range" class="form-range" id="progressPercentage" 
-                                   min="0" max="100" value="0">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="timeSpent" class="form-label">Time Spent (minutes)</label>
-                            <input type="number" class="form-control" id="timeSpent" min="0">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="difficultyRating" class="form-label">
-                                Difficulty Rating: <span id="difficultyRatingValue">3</span>/5
-                            </label>
-                            <input type="range" class="form-range" id="difficultyRating" 
-                                   min="1" max="5" value="3">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="engagementRating" class="form-label">
-                                Engagement Rating: <span id="engagementRatingValue">3</span>/5
-                            </label>
-                            <input type="range" class="form-range" id="engagementRating" 
-                                   min="1" max="5" value="3">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="progressNotes" class="form-label">Notes (optional)</label>
-                            <textarea class="form-control" id="progressNotes" rows="3" 
-                                      placeholder="Your thoughts, insights, or questions..."></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="saveProgress()">
-                        <i class="fas fa-save me-1"></i>Save Progress
-                    </button>
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading modules...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading your learning modules...</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Action Buttons -->
-<div class="fixed-bottom p-3 d-flex justify-content-end gap-2">
-    <button class="btn btn-outline-primary" onclick="adaptPathway()" title="Adapt Pathway">
-        <i class="fas fa-sync-alt"></i>
-    </button>
-    <button class="btn btn-outline-success" onclick="exportProgress()" title="Export Progress">
-        <i class="fas fa-download"></i>
-    </button>
-    <button class="btn btn-primary" onclick="showDashboard()" title="Dashboard">
-        <i class="fas fa-tachometer-alt"></i>
-    </button>
+<!-- Resource Modal -->
+<div class="modal fade" id="resourceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resourceModalTitle">Resource Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="resourceModalBody">
+                Loading resource details...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" target="_blank" class="btn btn-primary" id="resourceModalLink">
+                    <i class="fas fa-external-link-alt me-1"></i>Open Resource
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
-{% endblock %}
 
-{% block extra_css %}
 <style>
-    .module-card {
-        border-left: 4px solid var(--primary-color);
-        transition: all 0.3s ease;
-    }
-    
-    .module-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-    }
-    
-    .module-card.completed {
-        border-left-color: var(--success-color);
-    }
-    
-    .module-card.in-progress {
-        border-left-color: var(--warning-color);
-    }
-    
-    .topic-item {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 0.5rem;
-        border-left: 3px solid #dee2e6;
-        transition: all 0.3s ease;
-    }
-    
-    .topic-item:hover {
-        background: #e9ecef;
-    }
-    
-    .topic-item.completed {
-        border-left-color: var(--success-color);
-        background: rgba(76, 175, 80, 0.1);
-    }
-    
-    .topic-item.in-progress {
-        border-left-color: var(--warning-color);
-        background: rgba(255, 193, 7, 0.1);
-    }
-    
-    .resource-item {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        padding: 0.75rem;
-        margin-bottom: 0.5rem;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-    
-    .resource-item:hover {
-        border-color: var(--primary-color);
-        background: rgba(102, 126, 234, 0.05);
-    }
-    
-    .platform-youtube { color: #ff0000; }
-    .platform-coursera { color: #0056d3; }
-    .platform-edx { color: #02262b; }
-    .platform-khan_academy { color: #14bf96; }
-    .platform-github { color: #333; }
-    .platform-freecodecamp { color: #006400; }
-    .platform-mit_ocw { color: #8b0000; }
-    .platform-medium { color: #000; }
-    
-    .progress-ring {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .progress-ring circle {
-        fill: transparent;
-        stroke: #e9ecef;
-        stroke-width: 4;
-        transform: rotate(-90deg);
-        transform-origin: 50% 50%;
-    }
-    
-    .progress-ring .progress {
-        stroke: var(--success-color);
-        stroke-dasharray: 0 100;
-        transition: stroke-dasharray 0.3s ease;
-    }
-</style>
-{% endblock %}
+.skill-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 16px;
+    margin: 4px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
-{% block extra_js %}
+.module-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.module-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.resource-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.resource-item:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+    transform: translateX(4px);
+}
+
+.resource-completed {
+    background: #d4edda !important;
+    border-color: #28a745 !important;
+}
+
+.difficulty-beginner { background: #28a745; color: white; }
+.difficulty-intermediate { background: #ffc107; color: #212529; }
+.difficulty-advanced { background: #dc3545; color: white; }
+
+.platform-youtube { color: #ff0000; }
+.platform-coursera { color: #0056d3; }
+.platform-edx { color: #02262b; }
+.platform-khan { color: #14bf96; }
+.platform-github { color: #333; }
+</style>
+
 <script>
-    class PathwayViewer {
-        constructor() {
-            this.pathway = null;
-            this.progress = {};
-            this.currentView = 'timeline';
-            
-            // Use setTimeout to ensure DOM is fully ready
-            setTimeout(() => {
-                try {
-                    this.safeInitialize();
-                } catch (error) {
-                    console.error('PathwayViewer initialization error:', error);
-                    this.showErrorState();
-                }
-            }, 100);
-        }
-        
-        safeInitialize() {
-            // Show loading state
+// Global progress tracking
+let globalProgress = {
+    completedResources: new Set(),
+    totalResources: 0
+};
+
+// Simple, robust pathway loader
+class SimplePathwayLoader {
+    constructor() {
+        this.pathway = null;
+        this.init();
+    }
+    
+    async init() {
+        try {
             showLoading();
-            
-            // Try to load pathway data
-            if (!this.loadPathway()) {
-                this.showErrorState();
-                return;
-            }
-            
-            // Initialize event listeners safely
-            this.initializeEventListeners();
-            
-            // Display pathway if data is available
+            await this.loadPathwayData();
             if (this.pathway) {
                 this.displayPathway();
             } else {
-                this.showErrorState();
+                this.showErrorMessage();
             }
-        }
-        
-        showErrorState() {
+        } catch (error) {
+            console.error('Pathway loading error:', error);
+            this.showErrorMessage();
+        } finally {
             hideLoading();
-            
-            // Update title safely
-            const titleEl = document.getElementById('pathwayTitle');
-            if (titleEl) {
-                titleEl.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-3"></i>Pathway Not Available';
-            }
-            
-            // Update description safely
-            const descEl = document.getElementById('pathwayDescription');
-            if (descEl) {
-                descEl.textContent = 'Unable to load pathway data. Please try completing the assessment again.';
-            }
-            
-            // Show error message
-            showToast('Pathway data could not be loaded. Redirecting to assessment...', 'warning');
-            
-            // Redirect after delay
-            setTimeout(() => {
-                window.location.href = '/assessment';
-            }, 3000);
         }
-        
-        initializeEventListeners() {
+    }
+    
+    async loadPathwayData() {
+        // Try sessionStorage first
+        const stored = sessionStorage.getItem('generatedPathway');
+        if (stored) {
             try {
-                // Progress range sliders - with null checks
-                const progressPercentage = document.getElementById('progressPercentage');
-                if (progressPercentage) {
-                    progressPercentage.addEventListener('input', (e) => {
-                        const valueEl = document.getElementById('progressPercentageValue');
-                        if (valueEl) valueEl.textContent = e.target.value + '%';
-                    });
-                }
-                
-                const difficultyRating = document.getElementById('difficultyRating');
-                if (difficultyRating) {
-                    difficultyRating.addEventListener('input', (e) => {
-                        const valueEl = document.getElementById('difficultyRatingValue');
-                        if (valueEl) valueEl.textContent = e.target.value;
-                    });
-                }
-                
-                const engagementRating = document.getElementById('engagementRating');
-                if (engagementRating) {
-                    engagementRating.addEventListener('input', (e) => {
-                        const valueEl = document.getElementById('engagementRatingValue');
-                        if (valueEl) valueEl.textContent = e.target.value;
-                    });
-                }
-            } catch (error) {
-                console.error('Error initializing event listeners:', error);
-            }
-        }
-        
-        loadPathway() {
-            // Try to get pathway from session storage first
-            const storedPathway = sessionStorage.getItem('generatedPathway');
-            if (storedPathway) {
-                try {
-                    this.pathway = JSON.parse(storedPathway);
-                    // Validate pathway structure
-                    if (this.validatePathway(this.pathway)) {
-                        console.log('Loaded pathway from sessionStorage');
-                        return true; // Data is valid
-                    }
-                } catch (error) {
-                    console.error('Error parsing stored pathway:', error);
-                }
-            }
-            
-            // Try to load from server-provided data
-            if (window.pathwayData) {
-                try {
-                    this.pathway = window.pathwayData;
-                    if (this.validatePathway(this.pathway)) {
-                        console.log('Loaded pathway from server data');
-                        return true; // Data is valid
-                    }
-                } catch (error) {
-                    console.error('Error loading server pathway:', error);
-                }
-            }
-            
-            // If we get here, no valid data was found
-            console.warn('No valid pathway data found');
-            return false;
-        }
-        
-        validatePathway(pathway) {
-            if (!pathway || typeof pathway !== 'object') return false;
-            if (!pathway.title || !pathway.description) return false;
-            if (!Array.isArray(pathway.modules)) return false;
-            if (!Array.isArray(pathway.skills_covered)) return false;
-            if (!Array.isArray(pathway.learning_objectives)) return false;
-            return true;
-        }
-        
-
-        
-        displayPathway() {
-            if (!this.pathway) {
-                console.error('No pathway data available');
-                showToast('Unable to load pathway data', 'error');
+                this.pathway = JSON.parse(stored);
+                console.log('Loaded from sessionStorage');
                 return;
-            }
-            
-            try {
-                // Update header
-                const titleElement = document.getElementById('pathwayTitle');
-                const descElement = document.getElementById('pathwayDescription');
-                
-                if (titleElement) titleElement.innerHTML = 
-                    `<i class="fas fa-route text-primary me-3"></i>${this.pathway.title || 'Learning Pathway'}`;
-                if (descElement) descElement.textContent = this.pathway.description || 'Your learning journey';
-                
-                // Update stats safely
-                this.updateElement('totalDuration', `${this.pathway.total_duration_weeks || 0} weeks`);
-                this.updateElement('targetRole', this.pathway.target_role || 'General Development');
-                this.updateElement('skillsCount', (this.pathway.skills_covered || []).length);
-                this.updateElement('objectivesCount', (this.pathway.learning_objectives || []).length);
-                this.updateElement('totalModules', (this.pathway.modules || []).length);
-                
-                // Display sections
-                this.displayObjectives();
-                this.displaySkills();
-                this.displayModules();
-                
-                // Update progress
-                this.updateOverallProgress();
-                
-                hideLoading();
-                
-            } catch (error) {
-                console.error('Error displaying pathway:', error);
-                showToast('Error displaying pathway data', 'error');
-                hideLoading();
+            } catch (e) {
+                console.error('SessionStorage parse error:', e);
             }
         }
         
-        updateElement(id, content) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = content;
-            }
+        // Try server data
+        if (window.pathwayData) {
+            this.pathway = window.pathwayData;
+            console.log('Loaded from server');
+            return;
         }
         
-        displayObjectives() {
-            const container = document.getElementById('objectivesList');
-            if (!container) return;
+        console.warn('No pathway data found');
+    }
+    
+    displayPathway() {
+        if (!this.pathway) return;
+        
+        try {
+            // Update header
+            this.updateElement('pathwayTitle', `<i class="fas fa-route text-primary me-3"></i>${this.pathway.title || 'Your Learning Pathway'}`);
+            this.updateElement('pathwayDescription', this.pathway.description || 'Your personalized learning journey');
             
-            container.innerHTML = '';
+            // Update stats
+            this.updateElement('totalDuration', `${this.pathway.total_duration_weeks || 0} weeks`);
+            this.updateElement('targetRole', this.pathway.target_role || 'General Development');
+            this.updateElement('skillsCount', (this.pathway.skills_covered || []).length);
+            this.updateElement('totalModules', (this.pathway.modules || []).length);
             
-            const objectives = this.pathway.learning_objectives || [];
-            if (objectives.length === 0) {
-                container.innerHTML = '<div class="col-12 text-muted"><p>No learning objectives defined yet.</p></div>';
-                return;
+            // Display content
+            this.displayObjectives();
+            this.displaySkills();
+            this.displayModules();
+            this.updateProgress();
+            
+        } catch (error) {
+            console.error('Display error:', error);
+            this.showErrorMessage();
+        }
+    }
+    
+    updateElement(id, content) {
+        const el = document.getElementById(id);
+        if (el) {
+            if (typeof content === 'string' && content.includes('<')) {
+                el.innerHTML = content;
+            } else {
+                el.textContent = content;
             }
-            
-            objectives.forEach((objective, index) => {
-                const objectiveCard = document.createElement('div');
-                objectiveCard.className = 'col-lg-6 mb-3';
-                objectiveCard.innerHTML = `
-                    <div class="learning-objective">
+        }
+    }
+    
+    displayObjectives() {
+        const container = document.getElementById('objectivesList');
+        if (!container) return;
+        
+        const objectives = this.pathway.learning_objectives || [];
+        if (objectives.length === 0) {
+            container.innerHTML = '<div class="col-12 text-muted"><p>No learning objectives defined yet.</p></div>';
+            return;
+        }
+        
+        container.innerHTML = objectives.map((objective, index) => `
+            <div class="col-lg-6 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
                         <div class="d-flex align-items-start">
                             <div class="me-3">
-                                <i class="fas fa-check-circle fa-lg"></i>
+                                <i class="fas fa-check-circle fa-lg text-success"></i>
                             </div>
                             <div>
                                 <h6 class="mb-1">Objective ${index + 1}</h6>
@@ -522,331 +299,135 @@
                             </div>
                         </div>
                     </div>
-                `;
-                container.appendChild(objectiveCard);
-            });
-        }
-        
-        displaySkills() {
-            const container = document.getElementById('skillsBadges');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            const skills = this.pathway.skills_covered || [];
-            if (skills.length === 0) {
-                container.innerHTML = '<span class="text-muted">No skills defined yet.</span>';
-                return;
-            }
-            
-            skills.forEach(skill => {
-                if (!skill) return; // Skip empty skills
-                const badge = document.createElement('span');
-                badge.className = 'skill-badge';
-                badge.textContent = skill.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                container.appendChild(badge);
-            });
-        }
-        
-        displayModules() {
-            this.displayTimelineView();
-            this.displayModulesView();
-        }
-        
-        displayTimelineView() {
-            const container = document.getElementById('timelineView');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            const modules = this.pathway.modules || [];
-            if (modules.length === 0) {
-                container.innerHTML = '<div class="text-center text-muted p-4"><p>No modules available yet.</p></div>';
-                return;
-            }
-            
-            modules.forEach((module, moduleIndex) => {
-                if (!module) return;
-                const moduleElement = document.createElement('div');
-                moduleElement.className = 'timeline-item';
-                
-                let topicsHTML = '';
-                if (module.topics && module.topics.length > 0) {
-                    topicsHTML = module.topics.map(topic => `
-                        <div class="topic-item" data-topic-id="${topic.id}">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">${topic.name}</h6>
-                                    <p class="text-muted small mb-2">${topic.description}</p>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="badge difficulty-${topic.difficulty}">${topic.difficulty}</span>
-                                        <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>${topic.estimated_hours}h
-                                        </small>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <button class="btn btn-sm btn-outline-primary" 
-                                            onclick="showTopicResources('${topic.id}')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="resources-${topic.id}" class="mt-3 d-none">
-                                ${this.renderTopicResources(topic)}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-                
-                moduleElement.innerHTML = `
-                    <div class="card module-card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="mb-0">${module.name}</h5>
-                                <small class="text-muted">${module.module_type} • ${module.estimated_weeks} weeks</small>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge difficulty-${module.difficulty}">${module.difficulty}</span>
-                                <div class="progress-ring">
-                                    <svg width="60" height="60">
-                                        <circle cx="30" cy="30" r="25"></circle>
-                                        <circle cx="30" cy="30" r="25" class="progress" 
-                                                style="stroke-dasharray: 0 157;"></circle>
-                                    </svg>
-                                    <div class="position-absolute top-50 start-50 translate-middle">
-                                        <small class="fw-bold">0%</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">${module.description}</p>
-                            <div class="topics-container">
-                                ${topicsHTML}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                container.appendChild(moduleElement);
-            });
-        }
-        
-        displayModulesView() {
-            const container = document.getElementById('modulesContainer');
-            if (!container) {
-                console.error('Modules container not found');
-                return;
-            }
-            
-            container.innerHTML = '';
-            
-            const modules = this.pathway.modules || [];
-            if (modules.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center text-muted"><p>No modules available yet.</p></div>';
-                return;
-            }
-            
-            modules.forEach((module, moduleIndex) => {
-                const moduleCard = document.createElement('div');
-                moduleCard.className = 'col-lg-6 mb-4';
-                moduleCard.innerHTML = `
-                    <div class="card module-card h-100">
-                        <div class="card-header">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">${module.name}</h6>
-                                <span class="badge difficulty-${module.difficulty}">${module.difficulty}</span>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">${module.description}</p>
-                            <div class="mb-3">
-                                <small class="text-muted">
-                                    <i class="fas fa-clock me-1"></i>${module.estimated_weeks} weeks
-                                    <i class="fas fa-list ms-3 me-1"></i>${module.topics?.length || 0} topics
-                                </small>
-                            </div>
-                            <div class="progress mb-2">
-                                <div class="progress-bar" style="width: 0%"></div>
-                            </div>
-                            <small class="text-muted">0% complete</small>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn btn-primary btn-sm w-100" 
-                                    onclick="expandModule(${moduleIndex})">
-                                <i class="fas fa-play me-1"></i>Start Module
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(moduleCard);
-            });
-        }
-        
-        renderTopicResources(topic) {
-            if (!topic || !topic.resources || topic.resources.length === 0) {
-                return '<p class="text-muted small">No resources available</p>';
-            }
-            
-            return topic.resources.map(resource => {
-                if (!resource) return '';
-                return `
-                <div class="resource-item" onclick="handleResourceClick('${resource.id}', '${resource.url}')">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center flex-grow-1">
-                            <i class="fas fa-${this.getResourceIcon(resource.type)} platform-${resource.platform} me-2"></i>
-                            <div>
-                                <div class="fw-medium">${resource.title}</div>
-                                <small class="text-muted">${resource.platform} • ${resource.type}</small>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            ${resource.duration ? `<small class="text-muted">${resource.duration}min</small>` : ''}
-                            ${resource.rating ? `<small class="text-warning"><i class="fas fa-star"></i> ${resource.rating}</small>` : ''}
-                            <button class="btn btn-sm btn-outline-primary" 
-                                    onclick="window.open('${resource.url}', '_blank'); event.stopPropagation();" 
-                                    title="Open Resource">
-                                <i class="fas fa-external-link-alt"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-success" 
-                                    onclick="updateProgress('${resource.id}'); event.stopPropagation();"
-                                    title="Mark Progress">
-                                <i class="fas fa-check"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
-                `;
-            }).filter(Boolean).join('');
-        }
-        
-        getResourceIcon(type) {
-            const icons = {
-                'video': 'play-circle',
-                'course': 'graduation-cap',
-                'article': 'file-text',
-                'interactive': 'gamepad',
-                'book': 'book',
-                'podcast': 'podcast'
-            };
-            return icons[type] || 'link';
-        }
-        
-        updateOverallProgress() {
-            // Calculate overall progress based on completed modules/topics
-            const totalItems = this.pathway.modules.reduce((sum, module) => 
-                sum + (module.topics ? module.topics.length : 1), 0);
-            const completedItems = 0; // Would be calculated from actual progress data
-            
-            const percentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-            
-            document.getElementById('overallProgress').style.width = percentage + '%';
-            document.getElementById('overallProgress').textContent = percentage + '%';
-            document.getElementById('completedModules').textContent = 0; // Would be actual count
-        }
+            </div>
+        `).join('');
     }
     
-    // Global functions
-    function handleResourceClick(resourceId, resourceUrl) {
-        // Try to show details modal, but if it fails, directly open the resource
-        try {
-            showResourceDetails(resourceId);
-        } catch (error) {
-            console.log('Modal failed, opening resource directly:', error);
-            if (resourceUrl) {
-                window.open(resourceUrl, '_blank');
-            } else {
-                showToast('Resource URL not available', 'warning');
-            }
+    displaySkills() {
+        const container = document.getElementById('skillsBadges');
+        if (!container) return;
+        
+        const skills = this.pathway.skills_covered || [];
+        if (skills.length === 0) {
+            container.innerHTML = '<span class="text-muted">No skills defined yet.</span>';
+            return;
         }
+        
+        container.innerHTML = skills.map(skill => 
+            `<span class="skill-badge">${this.formatSkill(skill)}</span>`
+        ).join('');
     }
     
-    function switchView(view) {
-        const timelineView = document.getElementById('timelineView');
-        const modulesView = document.getElementById('modulesView');
-        const buttons = document.querySelectorAll('.btn-group .btn');
+    formatSkill(skill) {
+        return skill.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    
+    displayModules() {
+        const container = document.getElementById('modulesContainer');
+        if (!container) return;
         
-        buttons.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-        
-        if (view === 'timeline') {
-            timelineView.classList.remove('d-none');
-            modulesView.classList.add('d-none');
-        } else {
-            timelineView.classList.add('d-none');
-            modulesView.classList.remove('d-none');
+        const modules = this.pathway.modules || [];
+        if (modules.length === 0) {
+            container.innerHTML = '<div class="col-12 text-center text-muted"><p>No modules available yet.</p></div>';
+            return;
         }
-    }
-    
-    function showTopicResources(topicId) {
-        const resourcesDiv = document.getElementById(`resources-${topicId}`);
-        resourcesDiv.classList.toggle('d-none');
-    }
-    
-    function showResourceDetails(resourceId) {
-        // Find the resource in the pathway data
-        let foundResource = null;
         
-        if (window.pathwayViewer && window.pathwayViewer.pathway) {
-            for (const module of window.pathwayViewer.pathway.modules) {
-                if (module.topics) {
-                    for (const topic of module.topics) {
-                        if (topic.resources) {
-                            foundResource = topic.resources.find(r => r.id === resourceId);
-                            if (foundResource) break;
-                        }
+        // Count total resources for progress tracking
+        globalProgress.totalResources = 0;
+        modules.forEach(module => {
+            if (module.topics) {
+                module.topics.forEach(topic => {
+                    if (topic.resources) {
+                        globalProgress.totalResources += topic.resources.length;
                     }
-                }
-                if (foundResource) break;
+                });
             }
-        }
+        });
         
-        if (foundResource) {
-            // Populate modal with resource details
-            document.getElementById('resourceModalTitle').textContent = foundResource.title;
-            document.getElementById('resourceModalBody').innerHTML = `
-                <div class="row">
-                    <div class="col-md-8">
-                        <h6>Description</h6>
-                        <p>${foundResource.description || 'No description available.'}</p>
-                        
-                        <h6>Details</h6>
-                        <ul class="list-unstyled">
-                            <li><strong>Platform:</strong> ${foundResource.platform}</li>
-                            <li><strong>Type:</strong> ${foundResource.type}</li>
-                            <li><strong>Difficulty:</strong> ${foundResource.difficulty}</li>
-                            ${foundResource.duration ? `<li><strong>Duration:</strong> ${foundResource.duration} minutes</li>` : ''}
-                            ${foundResource.rating ? `<li><strong>Rating:</strong> ${foundResource.rating}/5</li>` : ''}
-                            ${foundResource.instructor ? `<li><strong>Instructor:</strong> ${foundResource.instructor}</li>` : ''}
-                        </ul>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <i class="fas fa-${getResourceIcon(foundResource.type)} fa-3x text-primary mb-3"></i>
-                            <h6>${foundResource.platform}</h6>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Set the link for the modal button
-            document.getElementById('resourceModalLink').href = foundResource.url;
-            
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('resourceModal'));
-            modal.show();
-        } else {
-            // If resource not found, just open the link directly
-            showToast('Opening resource...', 'info');
-            // We'll implement a fallback in the onclick handler
-        }
+        this.updateElement('totalResources', globalProgress.totalResources);
+        
+        container.innerHTML = modules.map((module, index) => this.renderModule(module, index)).join('');
     }
     
-    function getResourceIcon(type) {
+    renderModule(module, index) {
+        if (!module) return '';
+        
+        const topics = module.topics || [];
+        const topicsHtml = topics.map(topic => this.renderTopic(topic)).join('');
+        
+        return `
+            <div class="col-lg-6 mb-4">
+                <div class="card module-card h-100">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">${module.name || `Module ${index + 1}`}</h5>
+                            <span class="badge difficulty-${module.difficulty || 'intermediate'}">${module.difficulty || 'intermediate'}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${module.description || 'No description available'}</p>
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>${module.estimated_weeks || 1} weeks
+                                <i class="fas fa-list ms-3 me-1"></i>${topics.length} topics
+                            </small>
+                        </div>
+                        ${topicsHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    renderTopic(topic) {
+        if (!topic) return '';
+        
+        const resources = topic.resources || [];
+        const resourcesHtml = resources.map(resource => this.renderResource(resource)).join('');
+        
+        return `
+            <div class="topic-section mb-3">
+                <h6 class="fw-bold">${topic.name || 'Untitled Topic'}</h6>
+                <p class="text-muted small">${topic.description || 'No description'}</p>
+                ${resourcesHtml}
+            </div>
+        `;
+    }
+    
+    renderResource(resource) {
+        if (!resource) return '';
+        
+        const isCompleted = globalProgress.completedResources.has(resource.id);
+        
+        return `
+            <div class="resource-item ${isCompleted ? 'resource-completed' : ''}" onclick="openResource('${resource.url}', '${resource.id}')">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center flex-grow-1">
+                        <i class="fas fa-${this.getResourceIcon(resource.type)} platform-${resource.platform} me-2"></i>
+                        <div>
+                            <div class="fw-medium">${resource.title || 'Untitled Resource'}</div>
+                            <small class="text-muted">${resource.platform || 'Unknown'} • ${resource.type || 'Resource'}</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        ${resource.duration ? `<small class="text-muted">${resource.duration}min</small>` : ''}
+                        ${resource.rating ? `<small class="text-warning"><i class="fas fa-star"></i> ${resource.rating}</small>` : ''}
+                        <button class="btn btn-sm ${isCompleted ? 'btn-success' : 'btn-outline-success'}" 
+                                onclick="toggleProgress('${resource.id}', event);"
+                                title="${isCompleted ? 'Completed' : 'Mark as completed'}">
+                            <i class="fas fa-${isCompleted ? 'check-double' : 'check'}"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    getResourceIcon(type) {
         const icons = {
             'video': 'play-circle',
-            'course': 'graduation-cap', 
+            'course': 'graduation-cap',
             'article': 'file-text',
             'interactive': 'gamepad',
             'book': 'book',
@@ -855,52 +436,113 @@
         return icons[type] || 'link';
     }
     
-    function updateProgress(resourceId) {
-        document.getElementById('progressResourceId').value = resourceId;
-        const modal = new bootstrap.Modal(document.getElementById('progressModal'));
-        modal.show();
-    }
-    
-    function saveProgress() {
-        const resourceId = document.getElementById('progressResourceId').value;
-        const formData = {
-            status: document.getElementById('progressStatus').value,
-            percentage: document.getElementById('progressPercentage').value,
-            timeSpent: document.getElementById('timeSpent').value,
-            difficultyRating: document.getElementById('difficultyRating').value,
-            engagementRating: document.getElementById('engagementRating').value,
-            notes: document.getElementById('progressNotes').value
-        };
+    updateProgress() {
+        const completed = globalProgress.completedResources.size;
+        const total = globalProgress.totalResources;
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
         
-        // Save progress (would make API call)
-        showToast('Progress updated successfully!', 'success');
-        bootstrap.Modal.getInstance(document.getElementById('progressModal')).hide();
+        this.updateElement('completedResources', completed);
+        this.updateElement('totalResources', total);
+        
+        const progressBar = document.getElementById('overallProgress');
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+        }
     }
     
-    function adaptPathway() {
-        showToast('Pathway adaptation feature coming soon!', 'info');
+    showErrorMessage() {
+        this.updateElement('pathwayTitle', '<i class="fas fa-exclamation-triangle text-warning me-3"></i>Pathway Not Available');
+        this.updateElement('pathwayDescription', 'Unable to load pathway data. Please try completing the assessment again.');
+        
+        const container = document.getElementById('modulesContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="col-12 text-center">
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>No Pathway Data</h5>
+                        <p>We couldn't find your learning pathway. Please complete the assessment to generate a new one.</p>
+                        <a href="/assessment" class="btn btn-primary">Take Assessment</a>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+// Global functions
+function openResource(url, resourceId) {
+    if (url && url !== 'undefined') {
+        window.open(url, '_blank');
+        // Auto-mark as completed when opened
+        setTimeout(() => {
+            globalProgress.completedResources.add(resourceId);
+            pathwayLoader.updateProgress();
+            // Update the visual state
+            const resourceItems = document.querySelectorAll(`[onclick*="${resourceId}"]`);
+            resourceItems.forEach(item => {
+                item.classList.add('resource-completed');
+                const button = item.querySelector('button');
+                if (button) {
+                    button.classList.remove('btn-outline-success');
+                    button.classList.add('btn-success');
+                    button.innerHTML = '<i class="fas fa-check-double"></i>';
+                    button.title = 'Completed';
+                }
+            });
+        }, 1000);
+    } else {
+        showToast('Resource URL not available', 'warning');
+    }
+}
+
+function toggleProgress(resourceId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
     }
     
-    function exportProgress() {
-        showToast('Export feature coming soon!', 'info');
+    if (globalProgress.completedResources.has(resourceId)) {
+        globalProgress.completedResources.delete(resourceId);
+        showToast('Progress unmarked', 'info');
+    } else {
+        globalProgress.completedResources.add(resourceId);
+        showToast('Resource completed!', 'success');
     }
     
-    function showDashboard() {
-        window.location.href = '/dashboard';
-    }
+    pathwayLoader.updateProgress();
     
-    function expandModule(moduleIndex) {
-        showToast(`Starting module ${moduleIndex + 1}`, 'success');
-    }
-    
-    // Make pathway data available to JavaScript
-    {% if pathway_data %}
-    window.pathwayData = {{ pathway_data | tojson }};
-    {% endif %}
-    
-    // Initialize pathway viewer when page loads
-    document.addEventListener('DOMContentLoaded', () => {
-        window.pathwayViewer = new PathwayViewer();
+    // Update visual state
+    const resourceItems = document.querySelectorAll(`[onclick*="${resourceId}"]`);
+    resourceItems.forEach(item => {
+        const button = item.querySelector('button');
+        const isCompleted = globalProgress.completedResources.has(resourceId);
+        
+        if (isCompleted) {
+            item.classList.add('resource-completed');
+            button.classList.remove('btn-outline-success');
+            button.classList.add('btn-success');
+            button.innerHTML = '<i class="fas fa-check-double"></i>';
+            button.title = 'Completed';
+        } else {
+            item.classList.remove('resource-completed');
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-success');
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            button.title = 'Mark as completed';
+        }
     });
+}
+
+// Make pathway data available to JavaScript
+{% if pathway_data %}
+window.pathwayData = {{ pathway_data | tojson }};
+{% endif %}
+
+// Initialize when DOM is ready
+let pathwayLoader;
+document.addEventListener('DOMContentLoaded', () => {
+    pathwayLoader = new SimplePathwayLoader();
+});
 </script>
 {% endblock %}
