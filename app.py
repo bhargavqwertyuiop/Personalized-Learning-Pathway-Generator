@@ -192,6 +192,9 @@ def generate_pathway():
             print(f"Resource aggregation error: {e}")
             enriched_pathway = pathway  # Use pathway without enrichment if aggregation fails
         
+        # Store pathway in session for later retrieval
+        session['current_pathway'] = enriched_pathway
+        
         return jsonify({
             'success': True,
             'pathway': enriched_pathway
@@ -234,7 +237,23 @@ def dashboard():
 @app.route('/pathway/<pathway_id>')
 def pathway_view(pathway_id):
     """Detailed view of a specific learning pathway"""
-    return render_template('pathway.html', pathway_id=pathway_id)
+    # Try to get pathway from session or provide fallback
+    pathway_data = session.get('current_pathway', None)
+    
+    # If no pathway in session, create a basic one
+    if not pathway_data:
+        pathway_data = {
+            'id': pathway_id,
+            'title': 'Learning Pathway',
+            'description': 'Your personalized learning journey',
+            'modules': [],
+            'total_duration_weeks': 4,
+            'target_role': 'General Development',
+            'skills_covered': ['learning', 'growth'],
+            'learning_objectives': ['Learn effectively', 'Build practical skills']
+        }
+    
+    return render_template('pathway.html', pathway_id=pathway_id, pathway_data=pathway_data)
 
 if __name__ == '__main__':
     with app.app_context():

@@ -339,13 +339,43 @@
             // Try to get pathway from session storage first
             const storedPathway = sessionStorage.getItem('generatedPathway');
             if (storedPathway) {
-                this.pathway = JSON.parse(storedPathway);
-                this.displayPathway();
-            } else {
-                // Try to load from URL parameter or show error
-                const pathwayId = window.location.pathname.split('/').pop();
-                this.loadPathwayFromServer(pathwayId);
+                try {
+                    this.pathway = JSON.parse(storedPathway);
+                    // Validate pathway structure
+                    if (this.validatePathway(this.pathway)) {
+                        this.displayPathway();
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error parsing stored pathway:', error);
+                }
             }
+            
+            // Try to load from server-provided data
+            if (window.pathwayData) {
+                try {
+                    this.pathway = window.pathwayData;
+                    if (this.validatePathway(this.pathway)) {
+                        this.displayPathway();
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error loading server pathway:', error);
+                }
+            }
+            
+            // Last resort: try to load from URL parameter or show error
+            const pathwayId = window.location.pathname.split('/').pop();
+            this.loadPathwayFromServer(pathwayId);
+        }
+        
+        validatePathway(pathway) {
+            if (!pathway || typeof pathway !== 'object') return false;
+            if (!pathway.title || !pathway.description) return false;
+            if (!Array.isArray(pathway.modules)) return false;
+            if (!Array.isArray(pathway.skills_covered)) return false;
+            if (!Array.isArray(pathway.learning_objectives)) return false;
+            return true;
         }
         
         async loadPathwayFromServer(pathwayId) {
@@ -365,32 +395,50 @@
         }
         
         displayPathway() {
-            if (!this.pathway) return;
+            if (!this.pathway) {
+                console.error('No pathway data available');
+                showToast('Unable to load pathway data', 'error');
+                return;
+            }
             
-            // Update header
-            document.getElementById('pathwayTitle').innerHTML = 
-                `<i class="fas fa-route text-primary me-3"></i>${this.pathway.title}`;
-            document.getElementById('pathwayDescription').textContent = this.pathway.description;
-            
-            // Update stats
-            document.getElementById('totalDuration').textContent = 
-                `${this.pathway.total_duration_weeks} weeks`;
-            document.getElementById('targetRole').textContent = this.pathway.target_role;
-            document.getElementById('skillsCount').textContent = this.pathway.skills_covered.length;
-            document.getElementById('objectivesCount').textContent = this.pathway.learning_objectives.length;
-            document.getElementById('totalModules').textContent = this.pathway.modules.length;
-            
-            // Display objectives
-            this.displayObjectives();
-            
-            // Display skills
-            this.displaySkills();
-            
-            // Display modules
-            this.displayModules();
-            
-            // Update progress
-            this.updateOverallProgress();
+            try {
+                // Update header
+                const titleElement = document.getElementById('pathwayTitle');
+                const descElement = document.getElementById('pathwayDescription');
+                
+                if (titleElement) titleElement.innerHTML = 
+                    `<i class="fas fa-route text-primary me-3"></i>${this.pathway.title || 'Learning Pathway'}`;
+                if (descElement) descElement.textContent = this.pathway.description || 'Your learning journey';
+                
+                // Update stats safely
+                this.updateElement('totalDuration', `${this.pathway.total_duration_weeks || 0} weeks`);
+                this.updateElement('targetRole', this.pathway.target_role || 'General Development');
+                this.updateElement('skillsCount', (this.pathway.skills_covered || []).length);
+                this.updateElement('objectivesCount', (this.pathway.learning_objectives || []).length);
+                this.updateElement('totalModules', (this.pathway.modules || []).length);
+                
+                // Display sections
+                this.displayObjectives();
+                this.displaySkills();
+                this.displayModules();
+                
+                // Update progress
+                this.updateOverallProgress();
+                
+                hideLoading();
+                
+            } catch (error) {
+                console.error('Error displaying pathway:', error);
+                showToast('Error displaying pathway data', 'error');
+                hideLoading();
+            }
+        }
+        
+        updateElement(id, content) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = content;
+            }
         }
         
         displayObjectives() {
@@ -507,9 +555,20 @@
         
         displayModulesView() {
             const container = document.getElementById('modulesContainer');
+            if (!container) {
+                console.error('Modules container not found');
+                return;
+            }
+            
             container.innerHTML = '';
             
-            this.pathway.modules.forEach((module, moduleIndex) => {
+            const modules = this.pathway.modules || [];
+            if (modules.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted"><p>No modules available yet.</p></div>';
+                return;
+            }
+            
+            modules.forEach((module, moduleIndex) => {
                 const moduleCard = document.createElement('div');
                 moduleCard.className = 'col-lg-6 mb-4';
                 moduleCard.innerHTML = `
@@ -546,11 +605,13 @@
         }
         
         renderTopicResources(topic) {
-            if (!topic.resources || topic.resources.length === 0) {
+            if (!topic || !topic.resources || topic.resources.length === 0) {
                 return '<p class="text-muted small">No resources available</p>';
             }
             
-            return topic.resources.map(resource => `
+            return topic.resources.map(resource => {
+                if (!resource) return '';
+                return `
                 <div class="resource-item" onclick="handleResourceClick('${resource.id}', '${resource.url}')">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center flex-grow-1">
@@ -576,7 +637,8 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).filter(Boolean).join('');
         }
         
         getResourceIcon(type) {
@@ -750,6 +812,11 @@
     function expandModule(moduleIndex) {
         showToast(`Starting module ${moduleIndex + 1}`, 'success');
     }
+    
+    // Make pathway data available to JavaScript
+    {% if pathway_data %}
+    window.pathwayData = {{ pathway_data | tojson }};
+    {% endif %}
     
     // Initialize pathway viewer when page loads
     document.addEventListener('DOMContentLoaded', () => {
