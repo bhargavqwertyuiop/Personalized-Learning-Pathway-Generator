@@ -191,6 +191,10 @@ class ResourceAggregator:
 
 # Platform-specific aggregators
 class YouTubeAggregator:
+    def search_resources(self, query: str, difficulty: str, content_types: List[str], limit: int) -> List[Resource]:
+        """Unified interface for resource searching"""
+        return self.search_videos(query, limit)
+    
     def search_videos(self, query: str, max_results: int = 5) -> List[Resource]:
         """Mock YouTube video search with real working URLs"""
         # Real YouTube educational channels and playlists
@@ -300,6 +304,10 @@ class YouTubeAggregator:
         return resources[:max_results]
 
 class CourseraAggregator:
+    def search_resources(self, query: str, difficulty: str, content_types: List[str], limit: int) -> List[Resource]:
+        """Unified interface for resource searching"""
+        return self.search_courses(query, limit)
+    
     def search_courses(self, query: str, max_results: int = 3) -> List[Resource]:
         """Mock Coursera course search with real working URLs"""
         course_database = {
@@ -387,6 +395,10 @@ class CourseraAggregator:
         return resources[:max_results]
 
 class EdXAggregator:
+    def search_resources(self, query: str, difficulty: str, content_types: List[str], limit: int) -> List[Resource]:
+        """Unified interface for resource searching"""
+        return self.search_courses(query, limit)
+    
     def search_courses(self, query: str, max_results: int = 3) -> List[Resource]:
         """Mock edX course search with real working URLs"""
         course_database = {
