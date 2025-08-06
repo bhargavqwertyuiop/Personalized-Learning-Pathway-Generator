@@ -6,8 +6,8 @@ An intelligent system that assesses learning styles, current knowledge, and care
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-username/learning-pathway-generator.git
-cd learning-pathway-generator
+git clone https://github.com/your-username/Personalized-Learning-Pathway-Generator.git
+cd Personalized-Learning-Pathway-Generator
 ```
 
 2. **Install dependencies**
