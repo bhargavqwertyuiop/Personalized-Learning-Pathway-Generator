@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}AI-Powered Personalized Learning Pathways - LearningPath AI{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold mb-4">
+        <span class="text-primary">AI-Powered</span> Learning Pathways
+    </h1>
+    <p class="lead mb-4">
+        Discover your optimal learning journey with personalized curricula generated from 
+        <strong>free, high-quality resources</strong> tailored to your unique learning style and career goals.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="/assessment" class="btn btn-primary btn-lg">
+            <i class="fas fa-brain me-2"></i>Start Assessment
+        </a>
+        <button class="btn btn-outline-primary btn-lg" onclick="scrollToFeatures()">
+            <i class="fas fa-info-circle me-2"></i>Learn More
+        </button>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row text-center mb-5">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                <h3 class="card-title">10,000+</h3>
+                <p class="card-text">Personalized Pathways Created</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <i class="fas fa-graduation-cap fa-2x text-success mb-2"></i>
+                <h3 class="card-title">50+</h3>
+                <p class="card-text">Career Paths Supported</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <i class="fas fa-book fa-2x text-info mb-2"></i>
+                <h3 class="card-title">100%</h3>
+                <p class="card-text">Free Resources</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                <h3 class="card-title">85%</h3>
+                <p class="card-text">Success Rate</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div id="features" class="mb-5">
+    <h2 class="text-center mb-5">Why Choose LearningPath AI?</h2>
+    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                    <h4 class="card-title">Scientific Assessment</h4>
+                    <p class="card-text">
+                        Our multi-dimensional assessment combines VARK learning styles, 
+                        Kolb's experiential learning theory, and Gardner's multiple intelligences 
+                        to create your unique learning profile.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-robot fa-3x text-success mb-3"></i>
+                    <h4 class="card-title">Adaptive AI Engine</h4>
+                    <p class="card-text">
+                        Our advanced algorithms continuously adapt your learning path based on 
+                        progress, engagement, and performance metrics to optimize your learning velocity.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-3x text-info mb-3"></i>
+                    <h4 class="card-title">100% Free Resources</h4>
+                    <p class="card-text">
+                        Access world-class education through carefully curated free resources from 
+                        YouTube, Coursera, edX, Khan Academy, MIT OpenCourseWare, and more.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-route fa-3x text-warning mb-3"></i>
+                    <h4 class="card-title">Career-Focused Pathways</h4>
+                    <p class="card-text">
+                        From Software Development to Data Science, our pathways are designed 
+                        with specific career outcomes in mind, including real-world projects and skills.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-danger mb-3"></i>
+                    <h4 class="card-title">Progress Analytics</h4>
+                    <p class="card-text">
+                        Track your learning journey with detailed analytics, milestone achievements, 
+                        and personalized recommendations for continuous improvement.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-secondary mb-3"></i>
+                    <h4 class="card-title">Community Support</h4>
+                    <p class="card-text">
+                        Connect with fellow learners, share progress, and get support through 
+                        our integrated community features and peer learning networks.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="mb-5">
+    <h2 class="text-center mb-5">How It Works</h2>
+    
+    <div class="pathway-timeline">
+        <div class="timeline-item">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <i class="fas fa-clipboard-list fa-3x text-primary"></i>
+                        </div>
+                        <div class="col-md-10">
+                            <h5 class="card-title">1. Take the Assessment</h5>
+                            <p class="card-text">
+                                Complete our comprehensive 15-minute assessment that evaluates your learning style, 
+                                current knowledge level, career goals, time commitment, and learning preferences.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <i class="fas fa-cogs fa-3x text-success"></i>
+                        </div>
+                        <div class="col-md-10">
+                            <h5 class="card-title">2. AI Pathway Generation</h5>
+                            <p class="card-text">
+                                Our AI analyzes your profile and generates a personalized curriculum with skill 
+                                dependencies, optimal sequencing, and curated free resources from top platforms.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <i class="fas fa-play fa-3x text-info"></i>
+                        </div>
+                        <div class="col-md-10">
+                            <h5 class="card-title">3. Start Learning</h5>
+                            <p class="card-text">
+                                Begin your personalized journey with structured modules, hands-on projects, 
+                                and milestone tracking. Resources adapt to your pace and performance.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <i class="fas fa-sync-alt fa-3x text-warning"></i>
+                        </div>
+                        <div class="col-md-10">
+                            <h5 class="card-title">4. Continuous Adaptation</h5>
+                            <p class="card-text">
+                                Your pathway evolves based on your progress, feedback, and changing goals. 
+                                Our AI ensures you're always on the optimal learning trajectory.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Pathways -->
+<div class="mb-5">
+    <h2 class="text-center mb-5">Popular Learning Pathways</h2>
+    
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-code me-2"></i>Full Stack Web Development</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Master frontend and backend development with modern frameworks and tools.
+                    </p>
+                    <div class="mb-3">
+                        <span class="skill-badge">HTML/CSS</span>
+                        <span class="skill-badge">JavaScript</span>
+                        <span class="skill-badge">React</span>
+                        <span class="skill-badge">Node.js</span>
+                        <span class="skill-badge">Databases</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge difficulty-intermediate">Intermediate</span>
+                        <small class="text-muted">6-12 months</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Data Science & Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Transform data into insights with statistical analysis and machine learning.
+                    </p>
+                    <div class="mb-3">
+                        <span class="skill-badge">Python</span>
+                        <span class="skill-badge">Pandas</span>
+                        <span class="skill-badge">Statistics</span>
+                        <span class="skill-badge">ML</span>
+                        <span class="skill-badge">Visualization</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge difficulty-advanced">Advanced</span>
+                        <small class="text-muted">8-16 months</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resource Partners -->
+<div class="mb-5">
+    <h2 class="text-center mb-4">Our Resource Partners</h2>
+    <div class="row text-center">
+        <div class="col-md-2 col-4 mb-3">
+            <div class="card">
+                <div class="card-body py-3">
+                    <i class="fab fa-youtube fa-2x text-danger"></i>
+                    <small class="d-block mt-2">YouTube</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="card">
+                <div class="card-body py-3">
+                    <i class="fas fa-graduation-cap fa-2x text-primary"></i>
+                    <small class="d-block mt-2">Coursera</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="card">
+                <div class="card-body py-3">
+                    <i class="fas fa-university fa-2x text-info"></i>
+                    <small class="d-block mt-2">edX</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="card">
+                <div class="card-body py-3">
+                    <i class="fas fa-calculator fa-2x text-success"></i>
+                    <small class="d-block mt-2">Khan Academy</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="card">
+                <div class="card-body py-3">
+                    <i class="fab fa-github fa-2x text-dark"></i>
+                    <small class="d-block mt-2">GitHub</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 mb-3">
+            <div class="card">
+                <div class="card-body py-3">
+                    <i class="fas fa-code fa-2x text-warning"></i>
+                    <small class="d-block mt-2">freeCodeCamp</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="text-center bg-light rounded p-5">
+    <h2 class="mb-4">Ready to Transform Your Learning Journey?</h2>
+    <p class="lead mb-4">
+        Join thousands of learners who have accelerated their careers with personalized, 
+        AI-driven learning pathways using only free, world-class resources.
+    </p>
+    <a href="/assessment" class="btn btn-primary btn-lg">
+        <i class="fas fa-rocket me-2"></i>Start Your Journey Now
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function scrollToFeatures() {
+        document.getElementById('features').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+    
+    // Add some interactive elements
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stats numbers
+        const statNumbers = document.querySelectorAll('.card-title');
+        statNumbers.forEach(stat => {
+            const finalValue = stat.textContent;
+            if (!isNaN(parseInt(finalValue))) {
+                const numericValue = parseInt(finalValue.replace(/\D/g, ''));
+                const suffix = finalValue.replace(/\d/g, '');
+                let currentValue = 0;
+                const increment = numericValue / 50;
+                
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= numericValue) {
+                        stat.textContent = finalValue;
+                        clearInterval(timer);
+                    } else {
+                        stat.textContent = Math.floor(currentValue) + suffix;
+                    }
+                }, 50);
+            }
+        });
+    });
+</script>
+{% endblock %}

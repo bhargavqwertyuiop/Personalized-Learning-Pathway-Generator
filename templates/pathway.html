@@ -1,0 +1,601 @@
+{% extends "base.html" %}
+
+{% block title %}Your Learning Pathway - LearningPath AI{% endblock %}
+
+{% block content %}
+<div id="pathwayContainer">
+    <!-- Pathway Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="display-6 fw-bold mb-3" id="pathwayTitle">
+                <i class="fas fa-route text-primary me-3"></i>Loading Your Learning Pathway...
+            </h1>
+            <p class="lead" id="pathwayDescription">
+                Please wait while we load your personalized learning journey...
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Progress Overview</h5>
+                    <div class="progress mb-2" style="height: 20px;">
+                        <div id="overallProgress" class="progress-bar bg-success" style="width: 0%" role="progressbar">0%</div>
+                    </div>
+                    <small class="text-muted">
+                        <span id="completedResources">0</span> of <span id="totalResources">0</span> resources completed
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pathway Stats -->
+    <div class="row mb-5">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                    <h5 id="totalDuration">0 weeks</h5>
+                    <small class="text-muted">Duration</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-bullseye fa-2x text-success mb-2"></i>
+                    <h5 id="targetRole">-</h5>
+                    <small class="text-muted">Target Role</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                    <h5 id="skillsCount">0</h5>
+                    <small class="text-muted">Skills</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-graduation-cap fa-2x text-info mb-2"></i>
+                    <h5 id="totalModules">0</h5>
+                    <small class="text-muted">Modules</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Objectives -->
+    <div class="row mb-5" id="objectivesSection">
+        <div class="col-12">
+            <h4 class="mb-3"><i class="fas fa-bullseye text-success me-2"></i>Learning Objectives</h4>
+            <div class="row" id="objectivesList">
+                <div class="col-12 text-center text-muted">
+                    <p>Loading objectives...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills to Learn -->
+    <div class="row mb-5" id="skillsSection">
+        <div class="col-12">
+            <h4 class="mb-3"><i class="fas fa-cogs text-primary me-2"></i>Skills You'll Learn</h4>
+            <div id="skillsBadges">
+                <span class="text-muted">Loading skills...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Modules -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3"><i class="fas fa-book text-info me-2"></i>Learning Modules</h4>
+            <div id="modulesContainer" class="row">
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading modules...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading your learning modules...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resource Modal -->
+<div class="modal fade" id="resourceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resourceModalTitle">Resource Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="resourceModalBody">
+                Loading resource details...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" target="_blank" class="btn btn-primary" id="resourceModalLink">
+                    <i class="fas fa-external-link-alt me-1"></i>Open Resource
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.skill-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 16px;
+    margin: 4px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.module-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.module-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.resource-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.resource-item:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+    transform: translateX(4px);
+}
+
+.resource-completed {
+    background: #d4edda !important;
+    border-color: #28a745 !important;
+}
+
+.difficulty-beginner { background: #28a745; color: white; }
+.difficulty-intermediate { background: #ffc107; color: #212529; }
+.difficulty-advanced { background: #dc3545; color: white; }
+
+.platform-youtube { color: #ff0000; }
+.platform-coursera { color: #0056d3; }
+.platform-edx { color: #02262b; }
+.platform-khan { color: #14bf96; }
+.platform-github { color: #333; }
+</style>
+
+<script>
+// Global progress tracking
+let globalProgress = {
+    completedResources: new Set(),
+    totalResources: 0
+};
+
+// Load existing progress from backend
+async function loadExistingProgress() {
+    try {
+        const response = await fetch('/api/get-progress');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.progress) {
+                data.progress.completed_resources.forEach(resourceId => {
+                    globalProgress.completedResources.add(resourceId);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading existing progress:', error);
+    }
+}
+
+// Simple, robust pathway loader
+class SimplePathwayLoader {
+    constructor() {
+        this.pathway = null;
+        this.init();
+    }
+    
+    async init() {
+        try {
+            showLoading();
+            
+            // Load existing progress first
+            await loadExistingProgress();
+            
+            await this.loadPathwayData();
+            if (this.pathway) {
+                this.displayPathway();
+            } else {
+                this.showErrorMessage();
+            }
+        } catch (error) {
+            console.error('Pathway loading error:', error);
+            this.showErrorMessage();
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async loadPathwayData() {
+        // Try sessionStorage first
+        const stored = sessionStorage.getItem('generatedPathway');
+        if (stored) {
+            try {
+                this.pathway = JSON.parse(stored);
+                console.log('Loaded from sessionStorage');
+                return;
+            } catch (e) {
+                console.error('SessionStorage parse error:', e);
+            }
+        }
+        
+        // Try server data
+        if (window.pathwayData) {
+            this.pathway = window.pathwayData;
+            console.log('Loaded from server');
+            return;
+        }
+        
+        console.warn('No pathway data found');
+    }
+    
+    displayPathway() {
+        if (!this.pathway) return;
+        
+        try {
+            // Update header
+            this.updateElement('pathwayTitle', `<i class="fas fa-route text-primary me-3"></i>${this.pathway.title || 'Your Learning Pathway'}`);
+            this.updateElement('pathwayDescription', this.pathway.description || 'Your personalized learning journey');
+            
+            // Update stats
+            this.updateElement('totalDuration', `${this.pathway.total_duration_weeks || 0} weeks`);
+            this.updateElement('targetRole', this.pathway.target_role || 'General Development');
+            this.updateElement('skillsCount', (this.pathway.skills_covered || []).length);
+            this.updateElement('totalModules', (this.pathway.modules || []).length);
+            
+            // Display content
+            this.displayObjectives();
+            this.displaySkills();
+            this.displayModules();
+            this.updateProgress();
+            
+        } catch (error) {
+            console.error('Display error:', error);
+            this.showErrorMessage();
+        }
+    }
+    
+    updateElement(id, content) {
+        const el = document.getElementById(id);
+        if (el) {
+            if (typeof content === 'string' && content.includes('<')) {
+                el.innerHTML = content;
+            } else {
+                el.textContent = content;
+            }
+        }
+    }
+    
+    displayObjectives() {
+        const container = document.getElementById('objectivesList');
+        if (!container) return;
+        
+        const objectives = this.pathway.learning_objectives || [];
+        if (objectives.length === 0) {
+            container.innerHTML = '<div class="col-12 text-muted"><p>No learning objectives defined yet.</p></div>';
+            return;
+        }
+        
+        container.innerHTML = objectives.map((objective, index) => `
+            <div class="col-lg-6 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle fa-lg text-success"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Objective ${index + 1}</h6>
+                                <p class="mb-0">${objective}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    displaySkills() {
+        const container = document.getElementById('skillsBadges');
+        if (!container) return;
+        
+        const skills = this.pathway.skills_covered || [];
+        if (skills.length === 0) {
+            container.innerHTML = '<span class="text-muted">No skills defined yet.</span>';
+            return;
+        }
+        
+        container.innerHTML = skills.map(skill => 
+            `<span class="skill-badge">${this.formatSkill(skill)}</span>`
+        ).join('');
+    }
+    
+    formatSkill(skill) {
+        return skill.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    
+    displayModules() {
+        const container = document.getElementById('modulesContainer');
+        if (!container) return;
+        
+        const modules = this.pathway.modules || [];
+        if (modules.length === 0) {
+            container.innerHTML = '<div class="col-12 text-center text-muted"><p>No modules available yet.</p></div>';
+            return;
+        }
+        
+        // Count total resources for progress tracking
+        globalProgress.totalResources = 0;
+        modules.forEach(module => {
+            if (module.topics) {
+                module.topics.forEach(topic => {
+                    if (topic.resources) {
+                        globalProgress.totalResources += topic.resources.length;
+                    }
+                });
+            }
+        });
+        
+        this.updateElement('totalResources', globalProgress.totalResources);
+        
+        container.innerHTML = modules.map((module, index) => this.renderModule(module, index)).join('');
+    }
+    
+    renderModule(module, index) {
+        if (!module) return '';
+        
+        const topics = module.topics || [];
+        const topicsHtml = topics.map(topic => this.renderTopic(topic)).join('');
+        
+        return `
+            <div class="col-lg-6 mb-4">
+                <div class="card module-card h-100">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">${module.name || `Module ${index + 1}`}</h5>
+                            <span class="badge difficulty-${module.difficulty || 'intermediate'}">${module.difficulty || 'intermediate'}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${module.description || 'No description available'}</p>
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>${module.estimated_weeks || 1} weeks
+                                <i class="fas fa-list ms-3 me-1"></i>${topics.length} topics
+                            </small>
+                        </div>
+                        ${topicsHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    renderTopic(topic) {
+        if (!topic) return '';
+        
+        const resources = topic.resources || [];
+        const resourcesHtml = resources.map(resource => this.renderResource(resource)).join('');
+        
+        return `
+            <div class="topic-section mb-3">
+                <h6 class="fw-bold">${topic.name || 'Untitled Topic'}</h6>
+                <p class="text-muted small">${topic.description || 'No description'}</p>
+                ${resourcesHtml}
+            </div>
+        `;
+    }
+    
+    renderResource(resource) {
+        if (!resource) return '';
+        
+        const isCompleted = globalProgress.completedResources.has(resource.id);
+        
+        return `
+            <div class="resource-item ${isCompleted ? 'resource-completed' : ''}" onclick="openResource('${resource.url}', '${resource.id}')">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center flex-grow-1">
+                        <i class="fas fa-${this.getResourceIcon(resource.type)} platform-${resource.platform} me-2"></i>
+                        <div>
+                            <div class="fw-medium">${resource.title || 'Untitled Resource'}</div>
+                            <small class="text-muted">${resource.platform || 'Unknown'} • ${resource.type || 'Resource'}</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        ${resource.duration ? `<small class="text-muted">${resource.duration}min</small>` : ''}
+                        ${resource.rating ? `<small class="text-warning"><i class="fas fa-star"></i> ${resource.rating}</small>` : ''}
+                        <button class="btn btn-sm ${isCompleted ? 'btn-success' : 'btn-outline-success'}" 
+                                onclick="toggleProgress('${resource.id}', event);"
+                                title="${isCompleted ? 'Completed' : 'Mark as completed'}">
+                            <i class="fas fa-${isCompleted ? 'check-double' : 'check'}"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    getResourceIcon(type) {
+        const icons = {
+            'video': 'play-circle',
+            'course': 'graduation-cap',
+            'article': 'file-text',
+            'interactive': 'gamepad',
+            'book': 'book',
+            'podcast': 'podcast'
+        };
+        return icons[type] || 'link';
+    }
+    
+    updateProgress() {
+        const completed = globalProgress.completedResources.size;
+        const total = globalProgress.totalResources;
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+        
+        this.updateElement('completedResources', completed);
+        this.updateElement('totalResources', total);
+        
+        const progressBar = document.getElementById('overallProgress');
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+        }
+    }
+    
+    showErrorMessage() {
+        this.updateElement('pathwayTitle', '<i class="fas fa-exclamation-triangle text-warning me-3"></i>Pathway Not Available');
+        this.updateElement('pathwayDescription', 'Unable to load pathway data. Please try completing the assessment again.');
+        
+        const container = document.getElementById('modulesContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="col-12 text-center">
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>No Pathway Data</h5>
+                        <p>We couldn't find your learning pathway. Please complete the assessment to generate a new one.</p>
+                        <a href="/assessment" class="btn btn-primary">Take Assessment</a>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+// Global functions
+function openResource(url, resourceId) {
+    if (url && url !== 'undefined') {
+        window.open(url, '_blank');
+        // Auto-mark as completed when opened
+        setTimeout(() => {
+            if (!globalProgress.completedResources.has(resourceId)) {
+                globalProgress.completedResources.add(resourceId);
+                updateBackendProgress(resourceId, 'complete');
+                pathwayLoader.updateProgress();
+                // Update the visual state
+                const resourceItems = document.querySelectorAll(`[onclick*="${resourceId}"]`);
+                resourceItems.forEach(item => {
+                    item.classList.add('resource-completed');
+                    const button = item.querySelector('button');
+                    if (button) {
+                        button.classList.remove('btn-outline-success');
+                        button.classList.add('btn-success');
+                        button.innerHTML = '<i class="fas fa-check-double"></i>';
+                        button.title = 'Completed';
+                    }
+                });
+                showToast('Resource completed automatically!', 'success');
+            }
+        }, 1000);
+    } else {
+        showToast('Resource URL not available', 'warning');
+    }
+}
+
+function toggleProgress(resourceId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    const wasCompleted = globalProgress.completedResources.has(resourceId);
+    const action = wasCompleted ? 'uncomplete' : 'complete';
+    
+    if (wasCompleted) {
+        globalProgress.completedResources.delete(resourceId);
+        showToast('Progress unmarked', 'info');
+    } else {
+        globalProgress.completedResources.add(resourceId);
+        showToast('Resource completed!', 'success');
+    }
+    
+    // Update backend progress
+    updateBackendProgress(resourceId, action);
+    
+    pathwayLoader.updateProgress();
+    
+    // Update visual state
+    const resourceItems = document.querySelectorAll(`[onclick*="${resourceId}"]`);
+    resourceItems.forEach(item => {
+        const button = item.querySelector('button');
+        const isCompleted = globalProgress.completedResources.has(resourceId);
+        
+        if (isCompleted) {
+            item.classList.add('resource-completed');
+            button.classList.remove('btn-outline-success');
+            button.classList.add('btn-success');
+            button.innerHTML = '<i class="fas fa-check-double"></i>';
+            button.title = 'Completed';
+        } else {
+            item.classList.remove('resource-completed');
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-success');
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            button.title = 'Mark as completed';
+        }
+    });
+}
+
+async function updateBackendProgress(resourceId, action) {
+    try {
+        const response = await fetch('/api/update-progress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                resource_id: resourceId,
+                action: action,
+                time_spent: action === 'complete' ? Math.floor(Math.random() * 30) + 5 : 0 // Only add time when completing, 5-35 minutes
+            })
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to update backend progress');
+        }
+    } catch (error) {
+        console.error('Error updating backend progress:', error);
+    }
+}
+
+// Make pathway data available to JavaScript
+{% if pathway_data %}
+window.pathwayData = {{ pathway_data | tojson }};
+{% endif %}
+
+// Initialize when DOM is ready
+let pathwayLoader;
+document.addEventListener('DOMContentLoaded', () => {
+    pathwayLoader = new SimplePathwayLoader();
+});
+</script>
+{% endblock %}
