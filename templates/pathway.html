@@ -482,16 +482,12 @@ class SimplePathwayLoader {
     }
     
     updateProgress() {
-        let completed = globalProgress.completedResources.size;
-        let total = globalProgress.totalResources;
+        // Always recompute from DOM for accuracy
+        const allResources = document.querySelectorAll('.resource-item');
+        const total = allResources.length;
+        const completed = document.querySelectorAll('.resource-item.resource-completed').length;
+        globalProgress.totalResources = total;
         
-        // Fallback: recompute from DOM if totals are zero
-        if (total === 0) {
-            const resourceNodes = document.querySelectorAll('.resource-item');
-            total = resourceNodes.length;
-            completed = document.querySelectorAll('.resource-item.resource-completed').length;
-            globalProgress.totalResources = total;
-        }
         const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
         
         this.updateElement('completedResources', completed);
@@ -607,27 +603,32 @@ function toggleProgress(resourceId, event) {
     });
 }
 
-async function updateBackendProgress(resourceId, action) {
-    try {
-        const response = await fetch('/api/update-progress', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                resource_id: resourceId,
-                action: action,
-                time_spent: action === 'complete' ? Math.floor(Math.random() * 30) + 5 : 0 // Only add time when completing, 5-35 minutes
-            })
-        });
-        
-        if (!response.ok) {
-            console.error('Failed to update backend progress');
+    async function updateBackendProgress(resourceId, action) {
+        try {
+            const response = await fetch('/api/update-progress', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    resource_id: resourceId,
+                    action: action,
+                    time_spent: action === 'complete' ? Math.floor(Math.random() * 30) + 5 : 0 // Only add time when completing, 5-35 minutes
+                })
+            });
+            
+            // Immediately refresh progress UI regardless of response
+            pathwayLoader.updateProgress();
+            
+            if (!response.ok) {
+                console.error('Failed to update backend progress');
+            }
+        } catch (error) {
+            console.error('Error updating backend progress:', error);
+            // Still update UI locally
+            pathwayLoader.updateProgress();
         }
-    } catch (error) {
-        console.error('Error updating backend progress:', error);
     }
-}
 
 function showAchievement() {
     try {
