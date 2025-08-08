@@ -301,19 +301,19 @@ class ResourceAggregator:
                             r for r in deduped_resources if self._is_resource_topic_relevant(r, topic_name)
                         ]
                         
-                                # Fallback to deduped validated if filter too strict OR empty
-        if len(topic_filtered) < 3:
-            topic_filtered = deduped_resources[:6]
-        if not topic_filtered:
-            # As a last resort, show curated only
-            topic_filtered = seeded[:6] if seeded else deduped_resources[:6]
-        
-        # Final guard: enforce uniqueness and limit
-        topic_final = self._dedupe_by_url_and_title(topic_filtered)[:6]
-        # If still empty, include at least one curated if available
-        if not topic_final:
-            topic_final = self._dedupe_by_url_and_title(seeded or [])[:max(1, min(3, 6))]
-        topic['resources'] = [asdict(resource) for resource in topic_final]
+                        # Fallback to deduped validated if filter too strict OR empty
+                        if len(topic_filtered) < 3:
+                            topic_filtered = deduped_resources[:6]
+                        if not topic_filtered:
+                            # As a last resort, show curated only
+                            topic_filtered = seeded[:6] if seeded else deduped_resources[:6]
+                        
+                        # Final guard: enforce uniqueness and limit
+                        topic_final = self._dedupe_by_url_and_title(topic_filtered)[:6]
+                        # If still empty, include at least one curated if available
+                        if not topic_final:
+                            topic_final = self._dedupe_by_url_and_title(seeded or [])[:max(1, min(3, 6))]
+                        topic['resources'] = [asdict(resource) for resource in topic_final]
                         
                         # Update seen with canonical URLs to prevent duplicates across modules and topics
                         for r in topic_final:
