@@ -84,7 +84,10 @@ class ResourceAggregator:
                         
                         # Aggregate resources for this topic
                         resources = self.find_resources(topic_name, difficulty, limit=10)
-                        topic['resources'] = [asdict(resource) for resource in resources]
+                        
+                        # Validate URLs and upgrade to higher-quality/fresh links when needed
+                        validated_resources = self._validate_and_improve_resources(resources, topic_name)
+                        topic['resources'] = [asdict(resource) for resource in validated_resources]
         
         return enriched_pathway
     
@@ -188,6 +191,51 @@ class ResourceAggregator:
         # Sort by calculated score
         resources.sort(key=calculate_score, reverse=True)
         return resources
+
+    def _validate_and_improve_resources(self, resources: List[Resource], topic: str) -> List[Resource]:
+        """Ensure resource URLs are reachable; if not, swap in high-quality alternatives or search/fallbacks."""
+        improved: List[Resource] = []
+        for res in resources:
+            url = res.url or ''
+            if not url or not self._is_url_reachable(url):
+                # Swap by platform with known high-quality alternatives or search landing pages
+                if res.platform == 'youtube':
+                    res.url = f'https://www.youtube.com/results?search_query={quote(topic)}+tutorial'
+                elif res.platform == 'coursera':
+                    res.url = f'https://www.coursera.org/search?query={quote(topic)}&index=prod_all_launched_products_term_optimization'
+                elif res.platform == 'edx':
+                    res.url = f'https://www.edx.org/search?q={quote(topic)}'
+                elif res.platform == 'khan_academy':
+                    res.url = f'https://www.khanacademy.org/search?page_search_query={quote(topic)}'
+                elif res.platform == 'mit_ocw':
+                    res.url = f'https://ocw.mit.edu/search/?q={quote(topic)}'
+                elif res.platform == 'freecodecamp':
+                    res.url = 'https://www.freecodecamp.org/learn'
+                elif res.platform == 'github':
+                    res.url = f'https://github.com/search?q={quote(topic)}+awesome&type=repositories&s=stars&o=desc'
+                elif res.platform == 'medium':
+                    res.url = f'https://medium.com/search?q={quote(topic)}'
+                else:
+                    # Generic fallback to web search
+                    res.url = f'https://www.google.com/search?q={quote(topic + ' tutorial free course')}'
+                # Optionally adjust rating slightly lower due to fallback
+                if res.rating:
+                    res.rating = max(3.8, float(res.rating) - 0.2)
+            improved.append(res)
+        return improved
+
+    def _is_url_reachable(self, url: str) -> bool:
+        """Perform a lightweight HEAD/GET to determine if URL is reachable (with timeouts)."""
+        try:
+            # Use HEAD first, fallback to GET if not allowed
+            resp = requests.head(url, timeout=3, allow_redirects=True)
+            if resp.status_code >= 200 and resp.status_code < 400:
+                return True
+            # Some hosts disallow HEAD
+            resp = requests.get(url, timeout=4, allow_redirects=True)
+            return 200 <= resp.status_code < 400
+        except Exception:
+            return False
 
 # Platform-specific aggregators
 class YouTubeAggregator:
