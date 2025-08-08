@@ -105,13 +105,17 @@
                 </h6>
             </div>
             <div class="card-body">
-                {% if pathway_data.skills_covered %}
+                                {% if pathway_data.skills_covered %}
                     {% for skill in pathway_data.skills_covered[:5] %}
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <small class="fw-medium">{{ skill.replace('_', ' ').title() }}</small>
-                        <span class="badge bg-light text-dark">
-                            {% if loop.index <= skills_mastered %}In Progress{% else %}Pending{% endif %}
-                        </span>
+                    {% set pct = (skills_progress.get(skill, 0) if skills_progress else 0) %}
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="fw-medium">{{ skill.replace('_', ' ').title() }}</small>
+                            <small class="text-muted">{{ pct }}%</small>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar" style="width: {{ pct }}%"></div>
+                        </div>
                     </div>
                     {% endfor %}
                     {% if pathway_data.skills_covered|length > 5 %}

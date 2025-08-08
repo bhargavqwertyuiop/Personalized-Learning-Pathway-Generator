@@ -426,6 +426,10 @@ def calculate_dashboard_stats():
         'completion_percentage': 0
     }
     
+    # Initialize skill progress map
+    skill_to_total = {}
+    skill_to_completed = {}
+    
     if current_pathway:
         stats['active_pathways'] = 1
         stats['pathway_data'] = current_pathway
@@ -450,10 +454,16 @@ def calculate_dashboard_stats():
                 module_resources += len(topic_resources)
                 total_resources += len(topic_resources)
                 
+                # Count per-skill totals
+                for skill in (topic.get('skills_gained') or []):
+                    skill_to_total[skill] = skill_to_total.get(skill, 0) + len(topic_resources)
+                
                 for resource in topic_resources:
                     if resource.get('id') in completed_resource_ids:
                         module_completed_resources += 1
                         completed_resources_count += 1
+                        for skill in (topic.get('skills_gained') or []):
+                            skill_to_completed[skill] = skill_to_completed.get(skill, 0) + 1
             
             # Consider module completed if 80% of resources are done
             if module_resources > 0 and (module_completed_resources / module_resources) >= 0.8:
@@ -468,11 +478,19 @@ def calculate_dashboard_stats():
         if total_resources > 0:
             stats['completion_percentage'] = round((completed_resources_count / total_resources) * 100)
         
-        # Calculate skills mastered (based on completed modules)
+        # Calculate skills mastered and per-skill progress
         skills_covered = current_pathway.get('skills_covered', [])
         if total_modules > 0:
             skills_completion_ratio = completed_modules / total_modules
             stats['skills_mastered'] = round(len(skills_covered) * skills_completion_ratio)
+        
+        # Build simplified per-skill progress for dashboard
+        simplified_skills_progress = {}
+        for skill, total in skill_to_total.items():
+            completed_for_skill = skill_to_completed.get(skill, 0)
+            if total > 0:
+                simplified_skills_progress[skill] = round((completed_for_skill / total) * 100)
+        stats['skills_progress'] = simplified_skills_progress
         
         # Generate recent activity
         stats['recent_activity'] = generate_recent_activity(current_pathway, user_progress)

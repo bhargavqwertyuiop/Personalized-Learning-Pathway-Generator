@@ -1,6 +1,7 @@
 import requests
 import json
 import re
+import os
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 from urllib.parse import quote, urlencode
@@ -56,6 +57,12 @@ class ResourceAggregator:
             'medium': MediumAggregator(),
             'podcast': PodcastAggregator()
         }
+        # Performance and validation controls
+        self.validate_urls = os.environ.get('VALIDATE_URLS', 'false').lower() == 'true'
+        try:
+            self.rate_limit_delay = float(os.environ.get('AGGREGATOR_DELAY', '0.05'))
+        except Exception:
+            self.rate_limit_delay = 0.05
         
         # Skill-to-keyword mapping for better search targeting
         self.skill_keywords = {
@@ -74,6 +81,7 @@ class ResourceAggregator:
     def enrich_pathway(self, pathway: Dict) -> Dict:
         """Enrich a learning pathway with curated resources"""
         enriched_pathway = pathway.copy()
+        target_role = pathway.get('target_role')
         
         if 'modules' in pathway:
             for module in enriched_pathway['modules']:
@@ -82,8 +90,8 @@ class ResourceAggregator:
                         topic_name = topic.get('name', '')
                         difficulty = topic.get('difficulty', 'intermediate')
                         
-                        # Aggregate resources for this topic
-                        resources = self.find_resources(topic_name, difficulty, limit=10)
+                        # Aggregate resources for this topic (limit kept small for speed)
+                        resources = self.find_resources(topic_name, difficulty, role=target_role, limit=6)
                         
                         # Validate URLs and upgrade to higher-quality/fresh links when needed
                         validated_resources = self._validate_and_improve_resources(resources, topic_name)
@@ -92,7 +100,7 @@ class ResourceAggregator:
         return enriched_pathway
     
     def find_resources(self, topic: str, difficulty: str = 'intermediate', 
-                      content_types: List[str] = None, limit: int = 20) -> List[Resource]:
+                      content_types: List[str] = None, limit: int = 12, role: Optional[str] = None) -> List[Resource]:
         """Find resources for a specific topic across all platforms"""
         if content_types is None:
             content_types = ['video', 'course', 'article', 'interactive']
@@ -100,25 +108,27 @@ class ResourceAggregator:
         all_resources = []
         
         # Expand topic with related keywords
-        search_terms = self._expand_search_terms(topic)
+        search_terms = self._expand_search_terms(topic, role)
         
         for platform_name, platform in self.platforms.items():
             try:
                 for search_term in search_terms[:3]:  # Limit to prevent too many API calls
-                    resources = platform.search_resources(search_term, difficulty, content_types, limit//len(search_terms))
+                    chunk_limit = max(1, limit // max(1, len(search_terms)))
+                    resources = platform.search_resources(search_term, difficulty, content_types, chunk_limit)
                     all_resources.extend(resources)
-                    time.sleep(0.5)  # Rate limiting
+                    if self.rate_limit_delay:
+                        time.sleep(self.rate_limit_delay)
             except Exception as e:
                 print(f"Error fetching from {platform_name}: {e}")
                 continue
         
         # Deduplicate and rank resources
         unique_resources = self._deduplicate_resources(all_resources)
-        ranked_resources = self._rank_resources(unique_resources, topic, difficulty)
+        ranked_resources = self._rank_resources(unique_resources, topic, difficulty, role)
         
         return ranked_resources[:limit]
     
-    def _expand_search_terms(self, topic: str) -> List[str]:
+    def _expand_search_terms(self, topic: str, role: Optional[str] = None) -> List[str]:
         """Expand topic into related search terms"""
         terms = [topic]
         
@@ -128,6 +138,13 @@ class ResourceAggregator:
             if skill in topic_lower or any(keyword in topic_lower for keyword in keywords):
                 terms.extend(keywords[:2])  # Add top 2 related keywords
                 break
+        
+        # Include role context to improve relevance (e.g., "for data scientist")
+        if role:
+            role_lower = role.lower()
+            role_tokens = [t for t in role_lower.split() if t not in {'and','of','the','a','to','for'}]
+            terms.append(f"{topic} for {role_lower}")
+            terms.extend([f"{topic} {t}" for t in role_tokens[:2]])
         
         return list(set(terms))  # Remove duplicates
     
@@ -151,7 +168,7 @@ class ResourceAggregator:
         
         return unique_resources
     
-    def _rank_resources(self, resources: List[Resource], topic: str, difficulty: str) -> List[Resource]:
+    def _rank_resources(self, resources: List[Resource], topic: str, difficulty: str, role: Optional[str] = None) -> List[Resource]:
         """Rank resources based on relevance, quality, and user preferences"""
         def calculate_score(resource: Resource) -> float:
             score = 0.0
@@ -159,8 +176,15 @@ class ResourceAggregator:
             # Title relevance
             topic_words = topic.lower().split()
             title_words = resource.title.lower().split()
-            title_relevance = len(set(topic_words) & set(title_words)) / len(topic_words)
+            title_relevance = len(set(topic_words) & set(title_words)) / max(1, len(topic_words))
             score += title_relevance * 30
+            
+            # Role relevance boost
+            if role:
+                role_words = set(role.lower().split())
+                title_overlap = len(set(title_words) & role_words)
+                desc_overlap = len(set((resource.description or '').lower().split()) & role_words)
+                score += (title_overlap * 3) + (desc_overlap * 1)
             
             # Difficulty match
             if resource.difficulty == difficulty:
@@ -197,7 +221,13 @@ class ResourceAggregator:
         improved: List[Resource] = []
         for res in resources:
             url = res.url or ''
-            if not url or not self._is_url_reachable(url):
+            is_reachable = True
+            if self.validate_urls:
+                is_reachable = self._is_url_reachable(url)
+            else:
+                # Heuristic: consider non-empty HTTP(S) URLs as acceptable without network check
+                is_reachable = url.startswith('http')
+            if not url or not is_reachable:
                 # Swap by platform with known high-quality alternatives or search landing pages
                 if res.platform == 'youtube':
                     res.url = f'https://www.youtube.com/results?search_query={quote(topic)}+tutorial'
