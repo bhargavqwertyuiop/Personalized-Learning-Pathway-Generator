@@ -129,7 +129,7 @@
 </div>
 
 <!-- Achievement Modal -->
-<div class="modal fade" id="achievementModal" tabindex="-1">
+<div class="modal fade" id="achievementModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-header border-0 justify-content-center">
@@ -620,8 +620,18 @@ async function updateBackendProgress(resourceId, action) {
 
 function showAchievement() {
     try {
-        const modal = new bootstrap.Modal(document.getElementById('achievementModal'));
+        const modalEl = document.getElementById('achievementModal');
+        // Ensure modal content is focusable and backdrop is not static
+        modalEl.setAttribute('data-bs-backdrop', 'true');
+        modalEl.setAttribute('data-bs-keyboard', 'true');
+        const modal = new bootstrap.Modal(modalEl, {backdrop: true, keyboard: true, focus: true});
         modal.show();
+        // Auto-remove modal after interaction or escape
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            document.body.classList.remove('modal-open');
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.parentNode && b.parentNode.removeChild(b));
+        }, {once: true});
     } catch (e) {
         showToast('All modules completed! Great job!', 'success');
     }
