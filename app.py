@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import json
@@ -66,6 +66,46 @@ class Progress(db.Model):
 def index():
     return render_template('index.html')
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        data = request.form
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        if not username or not email or not password:
+            return render_template('signup.html', error='All fields are required.')
+        # Check existing user
+        if User.query.filter((User.username == username) | (User.email == email)).first():
+            return render_template('signup.html', error='Username or email already exists.')
+        # Create user
+        user = User(username=username, email=email, password_hash=generate_password_hash(password))
+        db.session.add(user)
+        db.session.commit()
+        session['user_id'] = user.id
+        session['username'] = user.username
+        return redirect(url_for('dashboard'))
+    return render_template('signup.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        data = request.form
+        username_or_email = data.get('username', '').strip()
+        password = data.get('password', '')
+        user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email.lower())).first()
+        if not user or not check_password_hash(user.password_hash, password):
+            return render_template('login.html', error='Invalid credentials.')
+        session['user_id'] = user.id
+        session['username'] = user.username
+        return redirect(url_for('dashboard'))
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
 @app.route('/assessment')
 def assessment():
     return render_template('assessment.html')
@@ -118,8 +158,22 @@ def submit_assessment():
                 }
             }
         
-        # Store in session for now (would save to user profile in production)
+        # Store in session and persist for logged-in users
         session['learning_profile'] = profile
+
+        user_id = session.get('user_id')
+        if user_id:
+            try:
+                user = User.query.get(user_id)
+                if user:
+                    user.learning_style = json.dumps(profile.get('learning_styles', {}))
+                    user.knowledge_level = json.dumps(profile.get('knowledge_levels', {}))
+                    user.preferences = json.dumps(profile.get('preferences', {}))
+                    user.career_goals = json.dumps(profile.get('career_profile', {}))
+                    db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                print(f"DB save profile error: {e}")
         
         return jsonify({
             'success': True,
@@ -134,6 +188,7 @@ def submit_assessment():
 def generate_pathway():
     """Generate a personalized learning pathway"""
     try:
+        user_id = session.get('user_id')
         data = request.json
         if not data:
             return jsonify({'success': False, 'error': 'No data received'}), 400
@@ -194,6 +249,22 @@ def generate_pathway():
         
         # Store pathway in session for later retrieval
         session['current_pathway'] = enriched_pathway
+
+        # Persist pathway for logged-in users
+        if user_id:
+            try:
+                pathway_model = LearningPathway(
+                    id=enriched_pathway.get('id', str(uuid.uuid4())),
+                    user_id=user_id,
+                    title=enriched_pathway.get('title', 'Learning Pathway'),
+                    description=enriched_pathway.get('description', ''),
+                    curriculum=json.dumps(enriched_pathway)
+                )
+                db.session.add(pathway_model)
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                print(f"DB save pathway error: {e}")
         
         # Initialize user progress if not exists
         if 'user_progress' not in session:
@@ -244,6 +315,15 @@ def adapt_pathway():
 @app.route('/dashboard')
 def dashboard():
     """User dashboard showing all pathways and progress"""
+    user_id = session.get('user_id')
+    if user_id:
+        # Attempt to load latest pathway from DB
+        latest_pathway = LearningPathway.query.filter_by(user_id=user_id).order_by(LearningPathway.created_at.desc()).first()
+        if latest_pathway:
+            try:
+                session['current_pathway'] = json.loads(latest_pathway.curriculum)
+            except Exception:
+                pass
     # Calculate real progress data
     dashboard_data = calculate_dashboard_stats()
     return render_template('dashboard.html', **dashboard_data)
@@ -407,6 +487,7 @@ def generate_recent_activity(pathway, user_progress):
 def update_progress():
     """Update user progress"""
     try:
+        user_id = session.get('user_id')
         data = request.json
         if not data:
             return jsonify({'success': False, 'error': 'No data received'}), 400
@@ -439,6 +520,27 @@ def update_progress():
         # Update session and mark as modified
         session['user_progress'] = user_progress
         session.modified = True
+
+        # Persist progress for logged-in users
+        if user_id:
+            try:
+                # Persist each completed resource as a progress entry linked to latest pathway
+                latest_pathway = LearningPathway.query.filter_by(user_id=user_id).order_by(LearningPathway.created_at.desc()).first()
+                if latest_pathway and resource_id:
+                    progress_entry = Progress(
+                        user_id=user_id,
+                        pathway_id=latest_pathway.id,
+                        resource_id=resource_id,
+                        status='completed' if action == 'complete' else 'not_started',
+                        completion_percentage=100.0 if action == 'complete' else 0.0,
+                        time_spent=time_spent,
+                        updated_at=datetime.utcnow()
+                    )
+                    db.session.add(progress_entry)
+                    db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                print(f"DB save progress error: {e}")
         
         print(f"DEBUG: After update - Progress: {user_progress}")
         
@@ -486,10 +588,19 @@ def clear_progress():
 @app.route('/pathway/<pathway_id>')
 def pathway_view(pathway_id):
     """Detailed view of a specific learning pathway"""
-    # Try to get pathway from session or provide fallback
+    user_id = session.get('user_id')
     pathway_data = session.get('current_pathway', None)
+
+    # If logged in, try to load that specific pathway from DB
+    if user_id:
+        db_pathway = LearningPathway.query.filter_by(id=pathway_id, user_id=user_id).first()
+        if db_pathway:
+            try:
+                pathway_data = json.loads(db_pathway.curriculum)
+            except Exception:
+                pass
     
-    # If no pathway in session, create a basic one
+    # Fallback
     if not pathway_data:
         pathway_data = {
             'id': pathway_id,
