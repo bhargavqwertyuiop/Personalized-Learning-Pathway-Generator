@@ -426,7 +426,10 @@ class SimplePathwayLoader {
         if (!topic) return '';
         
         const resources = topic.resources || [];
-        const resourcesHtml = resources.map(resource => this.renderResource(resource)).join('');
+        const hasResources = resources.length > 0;
+        const resourcesHtml = hasResources
+            ? resources.map(resource => this.renderResource(resource)).join('')
+            : '<div class="text-muted small">No resources available yet for this topic.</div>';
         
         return `
             <div class="topic-section mb-3">
@@ -479,8 +482,16 @@ class SimplePathwayLoader {
     }
     
     updateProgress() {
-        const completed = globalProgress.completedResources.size;
-        const total = globalProgress.totalResources;
+        let completed = globalProgress.completedResources.size;
+        let total = globalProgress.totalResources;
+        
+        // Fallback: recompute from DOM if totals are zero
+        if (total === 0) {
+            const resourceNodes = document.querySelectorAll('.resource-item');
+            total = resourceNodes.length;
+            completed = document.querySelectorAll('.resource-item.resource-completed').length;
+            globalProgress.totalResources = total;
+        }
         const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
         
         this.updateElement('completedResources', completed);
