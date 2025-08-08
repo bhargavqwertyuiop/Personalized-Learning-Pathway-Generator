@@ -4,7 +4,7 @@ import re
 import os
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode, urlparse, parse_qs
 import time
 from datetime import datetime
 
@@ -281,7 +281,7 @@ class ResourceAggregator:
                         # Seed with curated resources first
                         seeded = self._get_curated_resources(topic_name)
                         # Aggregate resources for this topic (limit kept small for speed)
-                        resources = seeded + self.find_resources(
+                        fetched = self.find_resources(
                             topic_name,
                             difficulty,
                             role=target_role,
@@ -289,6 +289,7 @@ class ResourceAggregator:
                             limit=max(0, 6 - len(seeded)),
                             seen_urls={self._canonicalize_url(r.url) for r in seeded}.union(pathway_seen_urls).union(module_seen_urls)
                         )
+                        resources = seeded + fetched
                         
                         # Validate URLs and upgrade to higher-quality/fresh links when needed
                         validated_resources = self._validate_and_improve_resources(resources, topic_name)
@@ -297,6 +298,11 @@ class ResourceAggregator:
                         topic_filtered = [
                             r for r in validated_resources if self._is_resource_topic_relevant(r, topic_name)
                         ]
+                        
+                        # Fallback to validated if filter too strict
+                        if len(topic_filtered) < 3:
+                            topic_filtered = validated_resources[:6]
+                        
                         topic['resources'] = [asdict(resource) for resource in topic_filtered]
                         
                         # Update seen with canonical URLs to prevent duplicates across modules and topics
@@ -517,30 +523,26 @@ class ResourceAggregator:
         return parsed.scheme + '://' + parsed.netloc + parsed.path
 
     def _is_resource_topic_relevant(self, resource: Resource, topic: str) -> bool:
-        """Check if a resource is relevant to a given topic based on title and description."""
+        """Heuristic topic relevance: topic tokens and positive/negative keyword gates (case-insensitive)."""
         topic_lower = topic.lower()
-        resource_lower = (resource.title or '').lower()
-        resource_desc_lower = (resource.description or '').lower()
-
-        # Check if the resource's title or description contains positive keywords for the topic
-        if any(keyword in resource_lower for keyword in self.topic_positive_keywords.get(topic, [])):
-            return True
-
-        # Check if the resource's title or description contains negative keywords for the topic
-        if any(keyword in resource_lower for keyword in self.topic_negative_keywords.get(topic, [])):
-            return False
-
-        # Fallback to simple keyword match if specific keywords not found
-        return any(keyword in resource_lower for keyword in self.skill_keywords.get('programming', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('python', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('javascript', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('data_analysis', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('machine_learning', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('web_development', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('algorithms', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('databases', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('system_design', [])) or \
-               any(keyword in resource_lower for keyword in self.skill_keywords.get('cybersecurity', []))
+        title = (resource.title or '').lower()
+        desc = (resource.description or '').lower()
+        text = title + ' ' + desc
+        # Topic tokens from the topic string itself
+        topic_tokens = re.sub(r'[^a-z0-9\s]', ' ', topic_lower).split()
+        has_topic_word = any(tok and tok in text for tok in topic_tokens)
+        # Collect positives/negatives for any mapped key contained in topic
+        positives = []
+        negatives = []
+        for key, kws in self.topic_positive_keywords.items():
+            if key in topic_lower:
+                positives.extend(kws)
+        for key, kws in self.topic_negative_keywords.items():
+            if key in topic_lower:
+                negatives.extend(kws)
+        has_positive = any(kw in text for kw in positives) if positives else True
+        has_negative = any(kw in text for kw in negatives) if negatives else False
+        return (has_topic_word or has_positive) and not has_negative
 
 # Platform-specific aggregators
 class YouTubeAggregator:
