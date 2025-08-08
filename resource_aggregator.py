@@ -64,6 +64,167 @@ class ResourceAggregator:
         except Exception:
             self.rate_limit_delay = 0.05
         
+        # Curated, highly stable resources by topic keywords
+        self.curated_resources = {
+            'python': [
+                Resource(
+                    id='cur_py_fcc_fullcourse',
+                    title='Python for Beginners – Full Course [freeCodeCamp] ',
+                    description='Learn Python from scratch in this full course',
+                    url='https://www.youtube.com/watch?v=rfscVS0vtbw',
+                    platform='youtube', type='video', duration=270, difficulty='beginner', rating=4.8,
+                    instructor='freeCodeCamp'
+                ),
+                Resource(
+                    id='cur_py_auto_boring',
+                    title='Automate the Boring Stuff with Python (free online book)',
+                    description='Practical Python programming for total beginners',
+                    url='https://automatetheboringstuff.com/',
+                    platform='book', type='article', difficulty='beginner', rating=4.7
+                ),
+                Resource(
+                    id='cur_py_docs_tutorial',
+                    title='Official Python Tutorial',
+                    description='The official Python language tutorial',
+                    url='https://docs.python.org/3/tutorial/',
+                    platform='docs', type='article', difficulty='beginner', rating=4.6
+                ),
+            ],
+            'javascript': [
+                Resource(
+                    id='cur_js_fcc_cert',
+                    title='freeCodeCamp: JavaScript Algorithms and Data Structures',
+                    description='Interactive certification covering JS fundamentals, algorithms, and data structures',
+                    url='https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/',
+                    platform='freecodecamp', type='interactive', difficulty='beginner', rating=4.8
+                ),
+                Resource(
+                    id='cur_js_mdn_guide',
+                    title='MDN Web Docs: JavaScript Guide',
+                    description='Comprehensive guide to modern JavaScript',
+                    url='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide',
+                    platform='mdn', type='article', difficulty='beginner', rating=4.8
+                ),
+            ],
+            'data structures': [
+                Resource(
+                    id='cur_ds_visualgo',
+                    title='VisuAlgo – Visualising Data Structures and Algorithms',
+                    description='Interactive visualizations for common data structures and algorithms',
+                    url='https://visualgo.net/en',
+                    platform='interactive', type='interactive', difficulty='intermediate', rating=4.7
+                ),
+                Resource(
+                    id='cur_ds_william_fiset',
+                    title='Data Structures Easy to Advanced (Full Course)',
+                    description='Detailed data structures course by William Fiset on freeCodeCamp',
+                    url='https://www.youtube.com/watch?v=RBSGKlAvoiM',
+                    platform='youtube', type='video', difficulty='intermediate', rating=4.8
+                ),
+                Resource(
+                    id='cur_ds_gfg',
+                    title='GeeksforGeeks: Data Structures',
+                    description='Extensive reference and tutorials on data structures',
+                    url='https://www.geeksforgeeks.org/data-structures/',
+                    platform='gfg', type='article', difficulty='intermediate', rating=4.6
+                ),
+            ],
+            'algorithms': [
+                Resource(
+                    id='cur_algo_cp',
+                    title='CP-Algorithms',
+                    description='Algorithms and data structures explanations and implementations',
+                    url='https://cp-algorithms.com/',
+                    platform='cp-algorithms', type='article', difficulty='advanced', rating=4.7
+                ),
+                Resource(
+                    id='cur_algo_mit_6_006',
+                    title='MIT OCW: Introduction to Algorithms (6.006/6.0060)',
+                    description='OpenCourseWare materials for MIT algorithms course',
+                    url='https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/',
+                    platform='mit_ocw', type='course', difficulty='advanced', rating=4.8
+                ),
+            ],
+            'data science': [
+                Resource(
+                    id='cur_ds_kaggle',
+                    title='Kaggle Micro-Courses',
+                    description='Hands-on, free data science short courses',
+                    url='https://www.kaggle.com/learn',
+                    platform='kaggle', type='interactive', difficulty='beginner', rating=4.7
+                ),
+                Resource(
+                    id='cur_ds_fcc_dap',
+                    title='freeCodeCamp: Data Analysis with Python',
+                    description='Interactive curriculum covering data analysis in Python',
+                    url='https://www.freecodecamp.org/learn/data-analysis-with-python/',
+                    platform='freecodecamp', type='interactive', difficulty='intermediate', rating=4.7
+                ),
+            ],
+            'machine learning': [
+                Resource(
+                    id='cur_ml_andrewng',
+                    title='Machine Learning by Andrew Ng (Coursera)',
+                    description='Foundational machine learning course from Stanford University',
+                    url='https://www.coursera.org/learn/machine-learning',
+                    platform='coursera', type='course', difficulty='intermediate', rating=4.9
+                ),
+                Resource(
+                    id='cur_ml_fastai',
+                    title='Practical Deep Learning for Coders (fast.ai)',
+                    description='Top-down, practical deep learning course',
+                    url='https://course.fast.ai/',
+                    platform='fastai', type='course', difficulty='advanced', rating=4.8
+                ),
+                Resource(
+                    id='cur_ml_sklearn_tutorial',
+                    title='scikit-learn Tutorials',
+                    description='Official scikit-learn tutorials and guides',
+                    url='https://scikit-learn.org/stable/tutorial/index.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                ),
+            ],
+            'react': [
+                Resource(
+                    id='cur_react_official',
+                    title='React Official: Learn React',
+                    description='Modern React learning materials from the official docs',
+                    url='https://react.dev/learn',
+                    platform='react', type='article', difficulty='beginner', rating=4.8
+                ),
+                Resource(
+                    id='cur_react_fcc_course',
+                    title='React Course – Beginner’s Tutorial',
+                    description='Full React course on freeCodeCamp',
+                    url='https://www.youtube.com/watch?v=bMknfKXIFA8',
+                    platform='youtube', type='video', difficulty='beginner', rating=4.7
+                ),
+            ],
+            'web development': [
+                Resource(
+                    id='cur_web_mdn_learn',
+                    title='MDN Web Docs: Learn Web Development',
+                    description='Comprehensive learning area for HTML/CSS/JS and more',
+                    url='https://developer.mozilla.org/en-US/docs/Learn',
+                    platform='mdn', type='article', difficulty='beginner', rating=4.8
+                ),
+                Resource(
+                    id='cur_web_fcc_rwd',
+                    title='freeCodeCamp: Responsive Web Design',
+                    description='Interactive curriculum for modern responsive web design',
+                    url='https://www.freecodecamp.org/learn/2022/responsive-web-design/',
+                    platform='freecodecamp', type='interactive', difficulty='beginner', rating=4.8
+                ),
+                Resource(
+                    id='cur_web_odin',
+                    title='The Odin Project',
+                    description='Full-stack open curriculum for web development',
+                    url='https://www.theodinproject.com/',
+                    platform='odin', type='interactive', difficulty='beginner', rating=4.7
+                ),
+            ],
+        }
+        
         # Skill-to-keyword mapping for better search targeting
         self.skill_keywords = {
             'programming': ['programming', 'coding', 'software development', 'computer science'],
@@ -77,35 +238,84 @@ class ResourceAggregator:
             'system_design': ['system design', 'architecture', 'scalability', 'distributed systems'],
             'cybersecurity': ['cybersecurity', 'information security', 'ethical hacking', 'network security']
         }
+        
+        # Topic specificity: positive/negative keywords to reduce cross-domain bleed (e.g., avoid Pandas for CS data structures)
+        self.topic_positive_keywords = {
+            'data structures': ['data structure', 'structures', 'arrays', 'linked list', 'stack', 'queue', 'tree', 'graph', 'hash', 'set', 'tuple', 'dictionary', 'list'],
+            'programming basics': ['variables', 'data types', 'loops', 'functions', 'conditionals', 'syntax'],
+            'python syntax': ['python syntax', 'statements', 'indentation', 'variables', 'operators'],
+            'libraries and modules': ['modules', 'import', 'packages', 'standard library']
+        }
+        self.topic_negative_keywords = {
+            'data structures': ['pandas', 'dataframe', 'series', 'analytics', 'data analysis'],
+            'programming basics': ['data science', 'machine learning', 'deep learning']
+        }
+    
+    def _get_curated_resources(self, topic: str) -> List[Resource]:
+        """Return curated resources matching the topic keywords, if any."""
+        topic_lower = topic.lower()
+        curated: List[Resource] = []
+        for key, items in self.curated_resources.items():
+            if key in topic_lower:
+                curated.extend(items)
+        return curated
     
     def enrich_pathway(self, pathway: Dict) -> Dict:
         """Enrich a learning pathway with curated resources"""
         enriched_pathway = pathway.copy()
         target_role = pathway.get('target_role')
+        skills = pathway.get('skills_covered') or []
+        
+        # Track duplicates across the entire pathway
+        pathway_seen_urls: set[str] = set()
         
         if 'modules' in pathway:
             for module in enriched_pathway['modules']:
+                # Track duplicates across topics within the same module
+                module_seen_urls: set[str] = set()
                 if 'topics' in module:
                     for topic in module['topics']:
                         topic_name = topic.get('name', '')
                         difficulty = topic.get('difficulty', 'intermediate')
                         
+                        # Seed with curated resources first
+                        seeded = self._get_curated_resources(topic_name)
                         # Aggregate resources for this topic (limit kept small for speed)
-                        resources = self.find_resources(topic_name, difficulty, role=target_role, limit=6)
+                        resources = seeded + self.find_resources(
+                            topic_name,
+                            difficulty,
+                            role=target_role,
+                            skills=skills,
+                            limit=max(0, 6 - len(seeded)),
+                            seen_urls={self._canonicalize_url(r.url) for r in seeded}.union(pathway_seen_urls).union(module_seen_urls)
+                        )
                         
                         # Validate URLs and upgrade to higher-quality/fresh links when needed
                         validated_resources = self._validate_and_improve_resources(resources, topic_name)
-                        topic['resources'] = [asdict(resource) for resource in validated_resources]
+                        
+                        # Topic-specific filter to avoid cross-domain content
+                        topic_filtered = [
+                            r for r in validated_resources if self._is_resource_topic_relevant(r, topic_name)
+                        ]
+                        topic['resources'] = [asdict(resource) for resource in topic_filtered]
+                        
+                        # Update seen with canonical URLs to prevent duplicates across modules and topics
+                        for r in topic_filtered:
+                            canon = self._canonicalize_url(r.url)
+                            module_seen_urls.add(canon)
+                            pathway_seen_urls.add(canon)
         
         return enriched_pathway
     
     def find_resources(self, topic: str, difficulty: str = 'intermediate', 
-                      content_types: List[str] = None, limit: int = 12, role: Optional[str] = None) -> List[Resource]:
+                      content_types: List[str] = None, limit: int = 12, role: Optional[str] = None,
+                      skills: Optional[List[str]] = None, seen_urls: Optional[set] = None) -> List[Resource]:
         """Find resources for a specific topic across all platforms"""
         if content_types is None:
             content_types = ['video', 'course', 'article', 'interactive']
         
-        all_resources = []
+        all_resources: List[Resource] = []
+        seen_urls = seen_urls or set()
         
         # Expand topic with related keywords
         search_terms = self._expand_search_terms(topic, role)
@@ -123,10 +333,45 @@ class ResourceAggregator:
                 continue
         
         # Deduplicate and rank resources
-        unique_resources = self._deduplicate_resources(all_resources)
+        unique_resources = self._deduplicate_resources(all_resources, seen_urls)
         ranked_resources = self._rank_resources(unique_resources, topic, difficulty, role)
         
-        return ranked_resources[:limit]
+        # Topic relevance first
+        topic_relevant = [r for r in ranked_resources if self._is_resource_topic_relevant(r, topic)]
+        
+        # Post-filter to emphasize role/skills relevance
+        filtered: List[Resource] = []
+        role_tokens = set((role or '').lower().split())
+        skill_tokens = set()
+        for s in (skills or []):
+            skill_tokens |= set(s.lower().split('_'))
+        for r in topic_relevant:
+            title = (r.title or '').lower()
+            desc = (r.description or '').lower()
+            if role_tokens and (any(t in title for t in role_tokens) or any(t in desc for t in role_tokens)):
+                filtered.append(r)
+            elif skill_tokens and (any(t in title for t in skill_tokens) or any(t in desc for t in skill_tokens)):
+                filtered.append(r)
+            if len(filtered) >= limit:
+                break
+        
+        # Fill remaining slots with topic-relevant ranked list if filter too strict
+        if len(filtered) < max(3, limit // 2):
+            for r in topic_relevant:
+                if r not in filtered:
+                    filtered.append(r)
+                if len(filtered) >= limit:
+                    break
+        
+        # Final fallback: if still too few, use general ranked resources
+        if len(filtered) < min(3, limit):
+            for r in ranked_resources:
+                if r not in filtered:
+                    filtered.append(r)
+                if len(filtered) >= limit:
+                    break
+        
+        return filtered[:limit]
     
     def _expand_search_terms(self, topic: str, role: Optional[str] = None) -> List[str]:
         """Expand topic into related search terms"""
@@ -148,11 +393,10 @@ class ResourceAggregator:
         
         return list(set(terms))  # Remove duplicates
     
-    def _deduplicate_resources(self, resources: List[Resource]) -> List[Resource]:
+    def _deduplicate_resources(self, resources: List[Resource], seen_urls: set) -> List[Resource]:
         """Remove duplicate resources based on title and URL similarity"""
         unique_resources = []
         seen_titles = set()
-        seen_urls = set()
         
         for resource in resources:
             # Normalize title for comparison
@@ -266,6 +510,37 @@ class ResourceAggregator:
             return 200 <= resp.status_code < 400
         except Exception:
             return False
+
+    def _canonicalize_url(self, url: str) -> str:
+        """Normalize URL for comparison, removing query parameters and fragments."""
+        parsed = urlparse(url)
+        return parsed.scheme + '://' + parsed.netloc + parsed.path
+
+    def _is_resource_topic_relevant(self, resource: Resource, topic: str) -> bool:
+        """Check if a resource is relevant to a given topic based on title and description."""
+        topic_lower = topic.lower()
+        resource_lower = (resource.title or '').lower()
+        resource_desc_lower = (resource.description or '').lower()
+
+        # Check if the resource's title or description contains positive keywords for the topic
+        if any(keyword in resource_lower for keyword in self.topic_positive_keywords.get(topic, [])):
+            return True
+
+        # Check if the resource's title or description contains negative keywords for the topic
+        if any(keyword in resource_lower for keyword in self.topic_negative_keywords.get(topic, [])):
+            return False
+
+        # Fallback to simple keyword match if specific keywords not found
+        return any(keyword in resource_lower for keyword in self.skill_keywords.get('programming', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('python', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('javascript', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('data_analysis', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('machine_learning', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('web_development', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('algorithms', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('databases', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('system_design', [])) or \
+               any(keyword in resource_lower for keyword in self.skill_keywords.get('cybersecurity', []))
 
 # Platform-specific aggregators
 class YouTubeAggregator:
