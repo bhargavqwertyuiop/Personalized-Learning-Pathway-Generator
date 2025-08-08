@@ -293,20 +293,24 @@ class ResourceAggregator:
                         
                         # Validate URLs and upgrade to higher-quality/fresh links when needed
                         validated_resources = self._validate_and_improve_resources(resources, topic_name)
+                        # Deduplicate again after validation (fallbacks may create dup URLs)
+                        deduped_resources = self._dedupe_by_url_and_title(validated_resources)
                         
                         # Topic-specific filter to avoid cross-domain content
                         topic_filtered = [
-                            r for r in validated_resources if self._is_resource_topic_relevant(r, topic_name)
+                            r for r in deduped_resources if self._is_resource_topic_relevant(r, topic_name)
                         ]
                         
-                        # Fallback to validated if filter too strict
+                        # Fallback to deduped validated if filter too strict
                         if len(topic_filtered) < 3:
-                            topic_filtered = validated_resources[:6]
+                            topic_filtered = deduped_resources[:6]
                         
-                        topic['resources'] = [asdict(resource) for resource in topic_filtered]
+                        # Final guard: enforce uniqueness and limit
+                        topic_final = self._dedupe_by_url_and_title(topic_filtered)[:6]
+                        topic['resources'] = [asdict(resource) for resource in topic_final]
                         
                         # Update seen with canonical URLs to prevent duplicates across modules and topics
-                        for r in topic_filtered:
+                        for r in topic_final:
                             canon = self._canonicalize_url(r.url)
                             module_seen_urls.add(canon)
                             pathway_seen_urls.add(canon)
@@ -400,23 +404,34 @@ class ResourceAggregator:
         return list(set(terms))  # Remove duplicates
     
     def _deduplicate_resources(self, resources: List[Resource], seen_urls: set) -> List[Resource]:
-        """Remove duplicate resources based on title and URL similarity"""
-        unique_resources = []
-        seen_titles = set()
+        """Remove duplicates using canonical URL and fuzzy title similarity."""
+        unique_resources: List[Resource] = []
+        seen_titles: List[str] = []
+        seen_urls = set(seen_urls)
         
         for resource in resources:
-            # Normalize title for comparison
-            normalized_title = re.sub(r'[^\w\s]', '', resource.title.lower())
-            
-            if (normalized_title not in seen_titles and 
-                resource.url not in seen_urls and
-                len(resource.title) > 10):  # Filter out very short titles
-                
+            canon = self._canonicalize_url(resource.url)
+            title = resource.title or ''
+            is_dup = False
+            if canon and canon in seen_urls:
+                is_dup = True
+            else:
+                # Fuzzy title match against kept titles
+                for kept_title in seen_titles:
+                    if self._token_set_similarity(title, kept_title) >= 0.8:
+                        is_dup = True
+                        break
+            if not is_dup:
                 unique_resources.append(resource)
-                seen_titles.add(normalized_title)
-                seen_urls.add(resource.url)
+                if canon:
+                    seen_urls.add(canon)
+                seen_titles.append(title)
         
         return unique_resources
+
+    def _dedupe_by_url_and_title(self, resources: List[Resource]) -> List[Resource]:
+        """Local dedupe helper for a list, ignoring an external seen set."""
+        return self._deduplicate_resources(resources, set())
     
     def _rank_resources(self, resources: List[Resource], topic: str, difficulty: str, role: Optional[str] = None) -> List[Resource]:
         """Rank resources based on relevance, quality, and user preferences"""
@@ -543,6 +558,12 @@ class ResourceAggregator:
         has_positive = any(kw in text for kw in positives) if positives else True
         has_negative = any(kw in text for kw in negatives) if negatives else False
         return (has_topic_word or has_positive) and not has_negative
+
+    def _token_set_similarity(self, s1: str, s2: str) -> float:
+        """Calculate token set similarity between two strings."""
+        tokens1 = set(re.sub(r'[^\w\s]', '', s1.lower()).split())
+        tokens2 = set(re.sub(r'[^\w\s]', '', s2.lower()).split())
+        return len(tokens1.intersection(tokens2)) / max(1, len(tokens1.union(tokens2)))
 
 # Platform-specific aggregators
 class YouTubeAggregator:
