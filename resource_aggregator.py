@@ -184,6 +184,94 @@ class ResourceAggregator:
                     platform='docs', type='article', difficulty='intermediate', rating=4.6
                 ),
             ],
+            # ML subtopics
+            'ml fundamentals': [
+                Resource(
+                    id='cur_mlf_overview_sklearn',
+                    title='Supervised vs Unsupervised Learning — scikit-learn User Guide',
+                    description='Overview of ML paradigms with examples',
+                    url='https://scikit-learn.org/stable/user_guide.html',
+                    platform='docs', type='article', difficulty='beginner', rating=4.6
+                ),
+                Resource(
+                    id='cur_mlf_fcc',
+                    title='Machine Learning for Beginners – Full Course [freeCodeCamp]',
+                    description='Introductory ML concepts in a single full course',
+                    url='https://www.youtube.com/watch?v=NWONeJKn6kc',
+                    platform='youtube', type='video', difficulty='beginner', rating=4.6
+                ),
+            ],
+            'supervised learning': [
+                Resource(
+                    id='cur_sup_sklearn',
+                    title='Supervised Learning — scikit-learn',
+                    description='Guide and examples of supervised learning algorithms',
+                    url='https://scikit-learn.org/stable/supervised_learning.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                ),
+                Resource(
+                    id='cur_sup_hastie',
+                    title='An Introduction to Statistical Learning (free PDF)',
+                    description='ISLR book — chapters on supervised learning',
+                    url='https://www.statlearning.com/',
+                    platform='book', type='article', difficulty='intermediate', rating=4.8
+                ),
+            ],
+            'unsupervised learning': [
+                Resource(
+                    id='cur_unsup_sklearn',
+                    title='Unsupervised Learning — scikit-learn',
+                    description='Clustering, dimensionality reduction and more',
+                    url='https://scikit-learn.org/stable/unsupervised_learning.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                ),
+                Resource(
+                    id='cur_unsup_fcc',
+                    title='Clustering Algorithms – Full Course [freeCodeCamp]',
+                    description='Unsupervised learning focused course',
+                    url='https://www.youtube.com/watch?v=9UR3tGm2H6o',
+                    platform='youtube', type='video', difficulty='intermediate', rating=4.5
+                ),
+            ],
+            'model evaluation': [
+                Resource(
+                    id='cur_eval_sklearn',
+                    title='Model Evaluation — scikit-learn',
+                    description='Metrics and model evaluation techniques in scikit-learn',
+                    url='https://scikit-learn.org/stable/modules/model_evaluation.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.7
+                ),
+                Resource(
+                    id='cur_eval_f1_auc',
+                    title='Precision, Recall & F1-Score Explained [YouTube]',
+                    description='Hands-on explanation and examples',
+                    url='https://www.youtube.com/watch?v=gDba8R3bM3Y',
+                    platform='youtube', type='video', difficulty='beginner', rating=4.5
+                ),
+            ],
+            'mlops': [
+                Resource(
+                    id='cur_mlops_mlkubeflow',
+                    title='MLOps with Kubeflow — Official Docs',
+                    description='End-to-end MLOps on Kubernetes with Kubeflow',
+                    url='https://www.kubeflow.org/docs/',
+                    platform='docs', type='article', difficulty='advanced', rating=4.5
+                ),
+                Resource(
+                    id='cur_mlops_mlfoundations',
+                    title='MLOps: Machine Learning Operations — Google Cloud',
+                    description='Google Cloud MLOps best practices and guides',
+                    url='https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning',
+                    platform='google', type='article', difficulty='advanced', rating=4.6
+                ),
+                Resource(
+                    id='cur_mlops_mlfow',
+                    title='MLflow — Open Source MLOps Platform',
+                    description='Manage the ML lifecycle: experiments, reproducibility, deployment',
+                    url='https://mlflow.org/docs/latest/index.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                ),
+            ],
             'react': [
                 Resource(
                     id='cur_react_official',
