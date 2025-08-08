@@ -328,12 +328,81 @@ def dashboard():
     dashboard_data = calculate_dashboard_stats()
     return render_template('dashboard.html', **dashboard_data)
 
+def get_db_progress_summary(user_id: str, pathway_id: str | None = None) -> dict:
+    """Aggregate user's progress from the database for the specified pathway or latest one."""
+    try:
+        if not user_id:
+            return {}
+        # Determine pathway to use
+        pathway: LearningPathway | None = None
+        if pathway_id:
+            pathway = LearningPathway.query.filter_by(id=pathway_id, user_id=user_id).first()
+        if not pathway:
+            pathway = (
+                LearningPathway.query.filter_by(user_id=user_id)
+                .order_by(LearningPathway.created_at.desc())
+                .first()
+            )
+        if not pathway:
+            return {}
+        # Aggregate progress entries for this pathway
+        entries = Progress.query.filter_by(user_id=user_id, pathway_id=pathway.id).all()
+        completed_resources = [e.resource_id for e in entries if (e.status or '').lower() == 'completed']
+        total_time_spent = sum(int(e.time_spent or 0) for e in entries)
+        # Derive total resources from curriculum if available
+        try:
+            curriculum = json.loads(pathway.curriculum) if pathway.curriculum else {}
+        except Exception:
+            curriculum = {}
+        total_resources = 0
+        if curriculum:
+            for module in curriculum.get('modules', []) or []:
+                for topic in module.get('topics', []) or []:
+                    total_resources += len(topic.get('resources', []) or [])
+        return {
+            'pathway_id': pathway.id,
+            'completed_resources': completed_resources,
+            'time_spent': total_time_spent,
+            'pathways_created': LearningPathway.query.filter_by(user_id=user_id).count(),
+            'total_resources': total_resources,
+        }
+    except Exception as e:
+        print(f"DB progress summary error: {e}")
+        return {}
+
 def calculate_dashboard_stats():
     """Calculate real user progress statistics"""
     # Get current pathway and learning profile
     current_pathway = session.get('current_pathway', None)
     learning_profile = session.get('learning_profile', None)
-    user_progress = session.get('user_progress', {
+
+    # If logged in, hydrate from DB
+    user_id = session.get('user_id')
+    db_progress = None
+    if user_id:
+        summary = get_db_progress_summary(user_id, (current_pathway or {}).get('id'))
+        if summary:
+            db_progress = {
+                'completed_resources': summary.get('completed_resources', []),
+                'time_spent': summary.get('time_spent', 0),
+                'pathways_created': summary.get('pathways_created', 0),
+                'skills_progress': {},
+            }
+            # Ensure current_pathway in session aligns with DB latest
+            if not current_pathway or current_pathway.get('id') != summary.get('pathway_id'):
+                latest_db = (
+                    LearningPathway.query.filter_by(user_id=user_id)
+                    .order_by(LearningPathway.created_at.desc())
+                    .first()
+                )
+                if latest_db:
+                    try:
+                        session['current_pathway'] = json.loads(latest_db.curriculum)
+                        current_pathway = session['current_pathway']
+                    except Exception:
+                        pass
+
+    user_progress = db_progress or session.get('user_progress', {
         'completed_resources': [],
         'time_spent': 0,
         'pathways_created': 0,
@@ -369,7 +438,7 @@ def calculate_dashboard_stats():
         completed_resource_ids = set(user_progress.get('completed_resources', []))
         
         # Debug logging
-        print(f"DEBUG: Completed resources from session: {completed_resource_ids}")
+        print(f"DEBUG: Completed resources (aggregated): {completed_resource_ids}")
         print(f"DEBUG: Total modules: {total_modules}")
         
         for module in current_pathway.get('modules', []):
@@ -496,7 +565,7 @@ def update_progress():
         action = data.get('action', 'complete')  # complete, uncomplete
         time_spent = data.get('time_spent', 0)
         
-        # Get current progress
+        # Get current progress (session fallback)
         user_progress = session.get('user_progress', {
             'completed_resources': [],
             'time_spent': 0,
@@ -521,22 +590,40 @@ def update_progress():
         session['user_progress'] = user_progress
         session.modified = True
 
-        # Persist progress for logged-in users
+        # Persist progress for logged-in users (upsert by resource)
         if user_id:
             try:
-                # Persist each completed resource as a progress entry linked to latest pathway
-                latest_pathway = LearningPathway.query.filter_by(user_id=user_id).order_by(LearningPathway.created_at.desc()).first()
+                latest_pathway = (
+                    LearningPathway.query.filter_by(user_id=user_id)
+                    .order_by(LearningPathway.created_at.desc())
+                    .first()
+                )
                 if latest_pathway and resource_id:
-                    progress_entry = Progress(
+                    entry = Progress.query.filter_by(
                         user_id=user_id,
                         pathway_id=latest_pathway.id,
                         resource_id=resource_id,
-                        status='completed' if action == 'complete' else 'not_started',
-                        completion_percentage=100.0 if action == 'complete' else 0.0,
-                        time_spent=time_spent,
-                        updated_at=datetime.utcnow()
-                    )
-                    db.session.add(progress_entry)
+                    ).first()
+                    if not entry:
+                        entry = Progress(
+                            user_id=user_id,
+                            pathway_id=latest_pathway.id,
+                            resource_id=resource_id,
+                        )
+                        db.session.add(entry)
+                    # Update fields
+                    if action == 'complete':
+                        entry.status = 'completed'
+                        entry.completion_percentage = 100.0
+                    elif action == 'uncomplete':
+                        entry.status = 'not_started'
+                        entry.completion_percentage = 0.0
+                    # Accumulate time if provided
+                    try:
+                        entry.time_spent = int(entry.time_spent or 0) + int(time_spent or 0)
+                    except Exception:
+                        entry.time_spent = int(time_spent or 0)
+                    entry.updated_at = datetime.utcnow()
                     db.session.commit()
             except Exception as e:
                 db.session.rollback()
@@ -554,6 +641,21 @@ def update_progress():
 def get_progress():
     """Get current user progress"""
     try:
+        user_id = session.get('user_id')
+        pathway_id = request.args.get('pathway_id')
+        if user_id:
+            summary = get_db_progress_summary(user_id, pathway_id)
+            if summary:
+                # Also refresh session snapshot to keep UI in sync
+                session['user_progress'] = {
+                    'completed_resources': summary.get('completed_resources', []),
+                    'time_spent': summary.get('time_spent', 0),
+                    'pathways_created': summary.get('pathways_created', 0),
+                    'skills_progress': {},
+                }
+                session.modified = True
+                return jsonify({'success': True, 'progress': session['user_progress']})
+        # Fallback to session-only
         user_progress = session.get('user_progress', {
             'completed_resources': [],
             'time_spent': 0,
