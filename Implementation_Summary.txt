@@ -1,0 +1,30 @@
+Implementation Summary: Personalized Learning Pathway Generator
+
+1) Authentication & Persistence
+- Added signup, login, logout routes using Flask sessions
+- Persisted learning profile, generated pathways, and per-resource progress with SQLAlchemy models (User, LearningPathway, Progress)
+- Dashboard loads latest user pathway from DB and aggregates per-user progress
+
+2) Dashboard & Progress
+- Dashboard shows accurate per-skill progress and overall completion
+- Progress updates are upserted in DB and aggregated for logged-in users
+- Client-side Progress Overview recomputes counts from DOM for instant updates
+
+3) Resource Aggregation & Quality
+- Faster aggregation with tuned limits and optional URL validation via VALIDATE_URLS
+- Role-aware search/ranking to prioritize career-relevant resources
+- Curated, stable sources seeded (freeCodeCamp, MDN, scikit-learn, MIT OCW, Visualgo, Kaggle, fast.ai)
+- Keyword seeds and generic fallbacks ensure every topic has URLs
+
+4) Deduplication & Relevance
+- Canonical URL and fuzzy title matching remove duplicates within topics and across modules
+- Topic-level positive/negative filters reduce cross-domain bleed
+- Stricter role/skills filtering with fallback to ranked results and curated items
+
+5) UI/UX Enhancements
+- Achievement modal escapable, cleans up backdrops, auto-closes; loading overlay hidden before modal
+- Topics show empty-state when no resources available
+
+6) Git & Branching
+- All changes pushed to branch: cursor/add-user-auth-persistent-data-and-push-to-github-2206
+- Per request, rollback to 267804f performed, then iterative fixes added
