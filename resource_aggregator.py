@@ -313,6 +313,103 @@ class ResourceAggregator:
             ],
         }
         
+        # Keyword-based curated seeds for common topics not exactly matching keys above
+        self.curated_keyword_seeds = {
+            'pandas': [
+                Resource(
+                    id='cur_pandas_docs',
+                    title='Pandas Documentation: Getting Started',
+                    description='Official pandas getting started guide',
+                    url='https://pandas.pydata.org/docs/getting_started/index.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                ),
+                Resource(
+                    id='cur_pandas_fcc',
+                    title='Pandas Tutorial – Full Course [freeCodeCamp]',
+                    description='Hands-on pandas course with real datasets',
+                    url='https://www.youtube.com/watch?v=vmEHCJofslg',
+                    platform='youtube', type='video', difficulty='intermediate', rating=4.7
+                )
+            ],
+            'visualization': [
+                Resource(
+                    id='cur_viz_matplotlib',
+                    title='Matplotlib Tutorial [Wes McKinney/Official User Guide]',
+                    description='Comprehensive Matplotlib usage and examples',
+                    url='https://matplotlib.org/stable/tutorials/index.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                ),
+                Resource(
+                    id='cur_viz_seaborn',
+                    title='Seaborn Tutorial',
+                    description='Official Seaborn documentation and tutorial',
+                    url='https://seaborn.pydata.org/tutorial.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                )
+            ],
+            'statistics': [
+                Resource(
+                    id='cur_stats_khan',
+                    title='Khan Academy: Statistics and probability',
+                    description='Interactive, comprehensive statistics lessons',
+                    url='https://www.khanacademy.org/math/statistics-probability',
+                    platform='khan_academy', type='interactive', difficulty='beginner', rating=4.6
+                ),
+                Resource(
+                    id='cur_stats_statquest',
+                    title='StatQuest with Josh Starmer — Statistics Playlist',
+                    description='Clear and engaging statistics explanations',
+                    url='https://www.youtube.com/playlist?list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF',
+                    platform='youtube', type='video', difficulty='beginner', rating=4.8
+                )
+            ],
+            'file handling': [
+                Resource(
+                    id='cur_py_files',
+                    title='Python Tutorial: Reading and Writing Files',
+                    description='Official Python docs — reading and writing files',
+                    url='https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files',
+                    platform='docs', type='article', difficulty='beginner', rating=4.6
+                )
+            ],
+            'libraries': [
+                Resource(
+                    id='cur_py_modules',
+                    title='Python Modules and Packages',
+                    description='How to structure Python programs with modules',
+                    url='https://docs.python.org/3/tutorial/modules.html',
+                    platform='docs', type='article', difficulty='beginner', rating=4.6
+                )
+            ],
+            'modules': [
+                Resource(
+                    id='cur_py_stdlib',
+                    title='Python Standard Library',
+                    description='Overview of the Python standard library',
+                    url='https://docs.python.org/3/library/index.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                )
+            ],
+            'python syntax': [
+                Resource(
+                    id='cur_py_langref',
+                    title='Python Language Reference — Lexical analysis',
+                    description='Official lexical analysis and syntax rules',
+                    url='https://docs.python.org/3/reference/lexical_analysis.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.5
+                )
+            ],
+            'clustering': [
+                Resource(
+                    id='cur_unsup_sklearn_clustering',
+                    title='Clustering — scikit-learn',
+                    description='Overview and examples of clustering algorithms',
+                    url='https://scikit-learn.org/stable/modules/clustering.html',
+                    platform='docs', type='article', difficulty='intermediate', rating=4.6
+                )
+            ],
+        }
+        
         # Skill-to-keyword mapping for better search targeting
         self.skill_keywords = {
             'programming': ['programming', 'coding', 'software development', 'computer science'],
@@ -343,10 +440,42 @@ class ResourceAggregator:
         """Return curated resources matching the topic keywords, if any."""
         topic_lower = topic.lower()
         curated: List[Resource] = []
+        # Key-based matches
         for key, items in self.curated_resources.items():
             if key in topic_lower:
                 curated.extend(items)
+        # Keyword-based seeds
+        for key, items in self.curated_keyword_seeds.items():
+            if key in topic_lower:
+                curated.extend(items)
         return curated
+
+    def _generic_fallback_resources(self, topic: str) -> List[Resource]:
+        """Generate generic but useful fallback links for any topic."""
+        q = quote(topic)
+        return [
+            Resource(
+                id=f'yt_search_{int(time.time())}',
+                title=f'{topic} Tutorial — YouTube Search',
+                description=f'Latest videos about {topic}',
+                url=f'https://www.youtube.com/results?search_query={q}+tutorial',
+                platform='youtube', type='video', difficulty='beginner', rating=4.3
+            ),
+            Resource(
+                id=f'google_search_{int(time.time())}',
+                title=f'{topic} — Google Search',
+                description=f'Popular web resources for {topic}',
+                url=f'https://www.google.com/search?q={q}+free+course',
+                platform='search', type='article', difficulty='beginner', rating=4.0
+            ),
+            Resource(
+                id=f'wikipedia_{int(time.time())}',
+                title=f'{topic} — Wikipedia',
+                description=f'Encyclopedic summary on {topic}',
+                url=f'https://en.wikipedia.org/wiki/{q}',
+                platform='wikipedia', type='article', difficulty='beginner', rating=4.0
+            ),
+        ]
     
     def enrich_pathway(self, pathway: Dict) -> Dict:
         """Enrich a learning pathway with curated resources"""
@@ -401,6 +530,9 @@ class ResourceAggregator:
                         # If still empty, include at least one curated if available
                         if not topic_final:
                             topic_final = self._dedupe_by_url_and_title(seeded or [])[:max(1, min(3, 6))]
+                        # Last resort generic fallback
+                        if not topic_final:
+                            topic_final = self._dedupe_by_url_and_title(self._generic_fallback_resources(topic_name))[:3]
                         topic['resources'] = [asdict(resource) for resource in topic_final]
                         
                         # Update seen with canonical URLs to prevent duplicates across modules and topics

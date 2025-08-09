@@ -632,6 +632,7 @@ function toggleProgress(resourceId, event) {
 
 function showAchievement() {
     try {
+        hideLoading();
         const modalEl = document.getElementById('achievementModal');
         // Ensure modal content is focusable and backdrop is not static
         modalEl.setAttribute('data-bs-backdrop', 'true');
@@ -644,6 +645,10 @@ function showAchievement() {
             const backdrops = document.querySelectorAll('.modal-backdrop');
             backdrops.forEach(b => b.parentNode && b.parentNode.removeChild(b));
         }, {once: true});
+        // Auto-close after 4 seconds to avoid blocking UI
+        setTimeout(() => {
+            try { modal.hide(); } catch (e) {}
+        }, 4000);
     } catch (e) {
         showToast('All modules completed! Great job!', 'success');
     }
