@@ -9,6 +9,28 @@ from learning_engine import LearningPathwayEngine
 from resource_aggregator import ResourceAggregator
 from assessment_engine import AssessmentEngine
 
+# Auth helpers
+from functools import wraps
+
+def is_authenticated() -> bool:
+    return bool(session.get('user_id'))
+
+def login_required(view_func):
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+        if not is_authenticated():
+            return redirect(url_for('login', next=request.path))
+        return view_func(*args, **kwargs)
+    return wrapper
+
+def api_login_required(view_func):
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+        if not is_authenticated():
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+        return view_func(*args, **kwargs)
+    return wrapper
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///learning_pathways.db'
@@ -64,6 +86,8 @@ class Progress(db.Model):
 # Routes
 @app.route('/')
 def index():
+    if not is_authenticated():
+        return redirect(url_for('login'))
     return render_template('index.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -107,10 +131,12 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route('/assessment')
+@login_required
 def assessment():
     return render_template('assessment.html')
 
 @app.route('/api/start-assessment', methods=['POST'])
+@api_login_required
 def start_assessment():
     """Initialize a new assessment session"""
     try:
@@ -126,6 +152,7 @@ def start_assessment():
         return jsonify({'success': False, 'error': 'Failed to start assessment'}), 500
 
 @app.route('/api/submit-assessment', methods=['POST'])
+@api_login_required
 def submit_assessment():
     """Process assessment responses and generate learning profile"""
     try:
@@ -185,6 +212,7 @@ def submit_assessment():
         return jsonify({'success': False, 'error': 'Internal server error'}), 500
 
 @app.route('/api/generate-pathway', methods=['POST'])
+@api_login_required
 def generate_pathway():
     """Generate a personalized learning pathway"""
     try:
@@ -288,6 +316,7 @@ def generate_pathway():
         return jsonify({'success': False, 'error': 'Failed to generate pathway'}), 500
 
 @app.route('/api/pathways/<pathway_id>/progress', methods=['POST'])
+@api_login_required
 def update_pathway_progress(pathway_id):
     """Update progress on a specific resource for a pathway"""
     data = request.json
@@ -295,6 +324,7 @@ def update_pathway_progress(pathway_id):
     return jsonify({'success': True})
 
 @app.route('/api/adapt-pathway', methods=['POST'])
+@api_login_required
 def adapt_pathway():
     """Adapt pathway based on user progress and feedback"""
     data = request.json
@@ -313,6 +343,7 @@ def adapt_pathway():
     })
 
 @app.route('/dashboard')
+@login_required
 def dashboard():
     """User dashboard showing all pathways and progress"""
     user_id = session.get('user_id')
@@ -571,6 +602,7 @@ def generate_recent_activity(pathway, user_progress):
 
 # API endpoint to update progress
 @app.route('/api/update-progress', methods=['POST'])
+@api_login_required
 def update_progress():
     """Update user progress"""
     try:
@@ -656,6 +688,7 @@ def update_progress():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/get-progress', methods=['GET'])
+@api_login_required
 def get_progress():
     """Get current user progress"""
     try:
@@ -688,6 +721,7 @@ def get_progress():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/clear-progress', methods=['POST'])
+@api_login_required
 def clear_progress():
     """Clear all user progress (for testing)"""
     try:
@@ -706,6 +740,7 @@ def clear_progress():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/pathway/<pathway_id>')
+@login_required
 def pathway_view(pathway_id):
     """Detailed view of a specific learning pathway"""
     user_id = session.get('user_id')
