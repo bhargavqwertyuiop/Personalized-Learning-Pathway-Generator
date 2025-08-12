@@ -38,6 +38,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# Ensure database tables exist at startup (idempotent)
+try:
+    with app.app_context():
+        db.create_all()
+        print("Database initialized or already exists.")
+except Exception as e:
+    print(f"Database initialization error: {e}")
+
 # Initialize core engines
 learning_engine = LearningPathwayEngine()
 resource_aggregator = ResourceAggregator()
