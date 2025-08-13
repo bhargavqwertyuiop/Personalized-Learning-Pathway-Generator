@@ -33,18 +33,10 @@ def api_login_required(view_func):
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:////home/learning_pathways.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///learning_pathways.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
-# Ensure database tables exist at startup (idempotent)
-try:
-    with app.app_context():
-        db.create_all()
-        print("Database initialized or already exists.")
-except Exception as e:
-    print(f"Database initialization error: {e}")
 
 # Initialize core engines
 learning_engine = LearningPathwayEngine()
